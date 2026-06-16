@@ -464,7 +464,7 @@ function refCodeOf(i,codesArr,D,meta,labels){
   const parts=codesArr[i], out=[];
   for(let k=1;k<=parts.length;k++){
     const pre=parts.slice(0,k).join('.'), mem=[];
-    for(let j=0;j<codesArr.length;j++) if(codesArr[j].slice(0,k).join('.')===pre) mem.push(j);
+    for(let j=0;j<labels.length;j++) if(codesArr[j].slice(0,k).join('.')===pre) mem.push(j);
     out.push(labels[medoid(mem,D,meta)]);
   }
   return out.join('.');
