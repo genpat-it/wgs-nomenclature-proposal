@@ -87,7 +87,7 @@
   <button data-tab="split">2 · Split vs Medoid</button>
   <button data-tab="inv">3 · Invariance</button>
   <button data-tab="const">4 · Constellation / Reassortment</button>
-  <button data-tab="pasteur">5 · Pasteur vs Invariant</button>
+  <button data-tab="pasteur">5 · Central registry vs Invariant</button>
 </div>
 <main>
 
@@ -268,16 +268,19 @@
 <section class="tab" id="tab-pasteur">
   <div class="card">
     <h2>Two ways to assign names, side by side — add samples and watch who changes</h2>
-    <p class="sub">Same data, two nomenclatures. On the left the <b>authority</b> model (Pasteur/LINbase style):
-       the name is a <b>serial number</b> in arrival order and the "type" is a cluster <b>recomputed every time</b>
-       on the whole dataset. On the right the <b>invariant</b> model: the code is computed against a
-       <b>frozen backbone</b>. Press the button to bring samples in one at a time.</p>
+    <p class="sub">Same data, two nomenclatures. On the left the <b>central-registry</b> model: you <b>submit</b> a
+       genome and the server <b>assigns a serial number</b> (the next free one); here the "type" is a flat cluster
+       <b>recomputed on the whole dataset</b>. On the right the <b>invariant</b> model: the code is <b>computed locally</b>
+       against a <b>frozen backbone</b>.
+       <br><em>Note: this central model is a simplification — real curated databases (incl. Institut Pasteur, which uses
+       cgST serials <b>and</b> LIN codes) are more stable than shown. The point is the contrast, not any specific institute.</em>
+       Press the button to bring samples in one at a time.</p>
     <button class="act" id="pv-add">➕ A new isolate arrives</button>
     <button class="ghost act" onclick="resetPV()">Reset</button>
     <p id="pv-step" style="margin-top:10px;font-weight:600"></p>
     <div class="row">
       <div class="col">
-        <h3 style="color:var(--red)">Authority model (Pasteur-like)</h3>
+        <h3 style="color:var(--red)">Central-registry model (submit → serial)</h3>
         <div id="pv-pasteur"></div>
         <h3 style="margin-top:10px">Type tree</h3>
         <svg id="pv-pasteur-tree" width="100%" height="170" viewBox="0 0 320 170"></svg>
@@ -1232,8 +1235,8 @@ function renderPV(){
       (PV_NOTE[PV_ORDER[last]]||'')+
       `<br><br><b style="color:var(--green)">Why the medoid:</b> ${PV_ORDER[last]} is measured against the frozen ★ references; `+
       `nearest is <b>${PV_ORDER[nm]}</b> (dist ${nd}) → it attaches there. No re-clustering → the others keep their names. `+
-      `Pasteur has no fixed reference, so it re-clusters and a bridge merges groups.`+
-      `<br><br><b style="color:var(--red)">Pasteur: ${pc} names/types changed</b> &nbsp;·&nbsp; `+
+      `The central-registry model has no fixed reference, so it re-clusters and a bridge merges groups.`+
+      `<br><br><b style="color:var(--red)">Central registry: ${pc} names/types changed</b> &nbsp;·&nbsp; `+
       `<b style="color:var(--green)">Invariant: ${lc} changed</b>.`;
   }
   // two trees: authority "type tree" (flat) vs invariant "name tree", with change markers
