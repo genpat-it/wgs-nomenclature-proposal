@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WGS Nomenclature Playground — invariant, decentralised LIN-style codes</title>
+<style>
+  :root{
+    --blue:#1e5a96; --green:#288c5a; --red:#be3737; --orange:#e19628;
+    --gray:#787878; --purple:#784696; --bg:#f5f7fa; --card:#ffffff;
+  }
+  *{box-sizing:border-box}
+  body{font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+       margin:0;background:var(--bg);color:#1c2530;line-height:1.45;font-size:15px}
+  header{background:var(--blue);color:#fff;padding:18px 26px}
+  header h1{margin:0;font-size:21px}
+  header p{margin:4px 0 0;opacity:.9;font-size:13px}
+  .tabs{display:flex;gap:2px;background:#163f6b;padding:0 14px;flex-wrap:wrap}
+  .tabs button{background:none;border:none;color:#cdddee;padding:11px 16px;cursor:pointer;
+       font-size:14px;border-bottom:3px solid transparent}
+  .tabs button.active{color:#fff;border-bottom-color:var(--orange);font-weight:600}
+  .tabs button:hover{color:#fff}
+  main{max-width:1180px;margin:0 auto;padding:22px}
+  .tab{display:none}
+  .tab.active{display:block}
+  .card{background:var(--card);border:1px solid #e2e8f0;border-radius:10px;padding:18px;margin-bottom:18px;
+        box-shadow:0 1px 3px rgba(0,0,0,.04)}
+  h2{margin:0 0 4px;font-size:18px;color:var(--blue)}
+  h3{margin:14px 0 6px;font-size:14px;color:var(--gray);text-transform:uppercase;letter-spacing:.04em}
+  .sub{color:var(--gray);font-size:13px;margin:0 0 12px}
+  .row{display:flex;gap:20px;flex-wrap:wrap}
+  .col{flex:1;min-width:300px}
+  .controls{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-end;margin-bottom:8px}
+  .ctl{display:flex;flex-direction:column;font-size:13px;min-width:150px}
+  .ctl label{margin-bottom:3px;color:var(--gray)}
+  .ctl .val{font-weight:700;color:var(--blue)}
+  input[type=range]{width:160px;accent-color:var(--blue)}
+  code,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .lincode{font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700;color:var(--blue)}
+  table{border-collapse:collapse;font-size:13px}
+  table.dist td,table.dist th{border:1px solid #d7dee6;padding:4px 8px;text-align:center;min-width:30px}
+  table.dist th{background:#eef3f8}
+  .far{color:var(--red);font-weight:700}
+  .near{color:var(--green)}
+  .medrow{background:#fff6e6}
+  .medcell{background:var(--orange);color:#fff;font-weight:700;border-radius:4px}
+  button.act{background:var(--green);color:#fff;border:none;border-radius:7px;padding:9px 15px;
+       cursor:pointer;font-size:14px;font-weight:600}
+  button.act:hover{filter:brightness(1.08)}
+  button.ghost{background:#eef3f8;color:var(--blue);border:1px solid #cdddee}
+  textarea{width:100%;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;
+       border:1px solid #cdd6e0;border-radius:7px;padding:8px;min-height:120px}
+  .pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:12px;font-weight:600}
+  .pill.split{background:#e3f4ea;color:var(--green)}
+  .pill.med{background:#fdf0db;color:#a76b10}
+  .pill.new{background:#fbe3e3;color:var(--red)}
+  .codetbl td{padding:5px 12px;border-bottom:1px solid #eef1f5;font-size:14px}
+  .codetbl th{text-align:left;padding:5px 12px;color:var(--gray);font-size:12px;text-transform:uppercase}
+  .changed{color:var(--red);font-weight:700}
+  .ok{color:var(--green);font-weight:600}
+  .note{background:#eef3f8;border-left:4px solid var(--blue);padding:10px 14px;border-radius:6px;font-size:13px;margin-top:12px}
+  .legend{font-size:12px;color:var(--gray);margin-top:6px}
+  .seg-ok{color:var(--green)}
+  .seg-re{background:var(--red);color:#fff;font-weight:700;border-radius:4px;padding:2px 6px}
+  svg text{font-family:ui-monospace,Menlo,Consolas,monospace}
+  .footer{color:var(--gray);font-size:12px;text-align:center;padding:18px}
+  table.grid{border-collapse:collapse;font-family:ui-monospace,Menlo,Consolas,monospace}
+  table.grid th,table.grid td{border:1px solid #d7dee6;padding:0}
+  table.grid input{border:none;width:44px;text-align:center;font-family:inherit;font-size:12px;padding:3px;background:transparent}
+  table.grid input:focus{outline:2px solid var(--blue);background:#fff;position:relative}
+  table.grid .lbl input{width:66px;font-weight:600;background:#eef3f8;color:var(--blue)}
+  table.grid .corner{background:#dde6ef;min-width:66px}
+  table.grid .diag input{background:#f1f1f1;color:#aaa}
+</style>
+</head>
+<body>
+<header>
+  <h1>WGS Nomenclature Playground</h1>
+  <p>An invariant, decentralised, LIN-style naming engine — runs entirely in your browser (no server = the point).</p>
+</header>
+<div id="jsflag" style="background:#be3737;color:#fff;padding:8px 26px;font-size:14px;font-weight:600">
+  ⚠ JavaScript is NOT running in this viewer — the page is static and the sliders will do nothing.
+  Open this file in a real browser (Chrome / Firefox), not in Cursor's HTML viewer.
+</div>
+<div class="tabs" id="tabs">
+  <button data-tab="tree" class="active">1 · Tree → Code</button>
+  <button data-tab="split">2 · Split vs Medoid</button>
+  <button data-tab="inv">3 · Invariance</button>
+  <button data-tab="const">4 · Constellation / Reassortment</button>
+  <button data-tab="pasteur">5 · Pasteur vs Invariant</button>
+</div>
+<main>
+
+<!-- ===================== TAB 1: TREE -> CODE ===================== -->
+<section class="tab active" id="tab-tree">
+  <div class="card">
+    <h2>From a distance matrix to a path-code</h2>
+    <p class="sub">Hierarchical clustering of the distances, then a cut at each threshold (coarse → fine).
+       Each cut adds one digit. The name <span class="lincode">A.B.C</span> <em>is</em> the path down the tree:
+       shared prefix = shared ancestry. Move the sliders and watch the cut lines and the codes change.</p>
+    <div class="controls">
+      <div class="ctl">
+        <label>Example dataset</label>
+        <select id="tree-dataset" onchange="switchDataset()" style="padding:6px;border-radius:6px;min-width:230px">
+          <option value="wnv8">WNV-like · 8 isolates (toy)</option>
+          <option value="wnv24" selected>WNV-like · 24 isolates (3 lineages)</option>
+          <option value="lmo30">Listeria-like cgMLST-SNP · 30 isolates (outbreaks + sporadic)</option>
+        </select>
+      </div>
+      <div class="ctl">
+        <label>View</label>
+        <select id="tree-view" onchange="renderTree()" style="padding:6px;border-radius:6px;min-width:200px">
+          <option value="lintree" selected>LIN tree — parent nodes + codes</option>
+          <option value="dendro">Dendrogram (height = distance)</option>
+          <option value="mst">MST — single linkage (distances on edges)</option>
+        </select>
+      </div>
+      <div class="ctl">
+        <label>Linkage</label>
+        <select id="tree-linkage" onchange="renderTree()" style="padding:6px;border-radius:6px;min-width:170px">
+          <option value="single" selected>single (SNP-address, SnapperDB/HierCC)</option>
+          <option value="average">average / UPGMA</option>
+          <option value="complete">complete (diametro ≤ t)</option>
+        </select>
+      </div>
+    </div>
+    <div class="controls" id="tree-ctls"></div>
+    <div id="tree-live" style="font-size:13px;color:var(--blue);font-weight:600;margin:2px 0 8px"></div>
+    <div class="row">
+      <div class="col" style="flex:2;min-width:420px">
+        <svg id="dendro" width="100%" height="380" viewBox="0 0 640 380"></svg>
+      </div>
+      <div class="col">
+        <h3>Computed LIN codes</h3>
+        <table class="codetbl" id="tree-codes"></table>
+        <div class="note">Each position is a fixed distance threshold. New samples only ever <b>append</b> deeper
+          digits — they never renumber the prefixes above them. That is invariance "by construction" (see tab 3).</div>
+      </div>
+    </div>
+    <h3>Distance distribution + thresholds</h3>
+    <p class="sub">Each threshold should fall in a <b>“gap”</b> (few or no distances), not inside a pile of bars.
+       Threshold in a gap = clean cut between real groups; threshold inside the bars = forcing (splits a real cluster).</p>
+    <svg id="disthist" width="100%" height="175" viewBox="0 0 640 175"></svg>
+    <details style="margin-top:14px" open>
+      <summary style="cursor:pointer;color:var(--blue)">Input distance matrix — edit cells (spreadsheet) or paste below</summary>
+      <p class="sub" style="margin-top:8px">Click a cell and type: the matrix is <b>symmetric</b>, so the mirror cell updates automatically;
+         the diagonal is fixed at 0. Row/column labels are editable too. The tree updates live.</p>
+      <div style="overflow:auto;max-height:340px;margin-bottom:10px"><table id="tree-grid" class="grid"></table></div>
+      <p class="sub" style="margin-top:8px">…or paste a matrix (tab/comma-separated, first row = labels, first column = labels):</p>
+      <textarea id="tree-matrix"></textarea>
+      <button class="act" onclick="loadTreeMatrix()">Recompute</button>
+      <button class="ghost act" onclick="resetTree()">Reset demo (WNV-like)</button>
+    </details>
+  </div>
+</section>
+
+<!-- ===================== TAB 2: SPLIT vs MEDOID ===================== -->
+<section class="tab" id="tab-split">
+  <div class="card">
+    <h2>“Many samples on the same level” — split or represent?</h2>
+    <p class="sub">The real question is not <em>which</em> of the N samples, but <b>are they above or below the
+       threshold?</b> Above the threshold → genuinely distinct → <b>split</b> (each gets its own digit).
+       Below → one true cluster → pick the <b>medoid</b> (member with smallest summed distance), with a
+       deterministic tie-break.</p>
+    <div class="controls">
+      <div class="ctl">
+        <label>Example set</label>
+        <select id="split-which" onchange="renderSplit()" style="padding:6px;border-radius:6px">
+          <option value="A">A · spread out (from the slides)</option>
+          <option value="B" selected>B · compact (from the slides)</option>
+        </select>
+      </div>
+      <div class="ctl">
+        <label>Threshold t = <span class="val" id="split-tval">3</span> SNP</label>
+        <input type="range" id="split-t" min="1" max="12" value="3" oninput="renderSplit()">
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        <h3>Distance matrix (Σ = summed distance)</h3>
+        <div id="split-table"></div>
+      </div>
+      <div class="col">
+        <h3>Decision</h3>
+        <div id="split-decision"></div>
+      </div>
+    </div>
+    <h3>Single-linkage tree (cut at t)</h3>
+    <p class="sub">R → one node per cluster at threshold t → its isolates. A red weight on an arc = a real split
+       at that distance (≥2 clusters = SPLIT); a grey <code>≤t</code> = no split, one cluster → pick the
+       <b>★ medoid</b>.</p>
+    <svg id="split-tree" width="100%" height="180" viewBox="0 0 380 180"></svg>
+  </div>
+</section>
+
+<!-- ===================== TAB 3: INVARIANCE ===================== -->
+<section class="tab" id="tab-inv">
+  <div class="card">
+    <h2>Invariance — frozen backbone vs recompute, and the blind spots</h2>
+    <p class="sub">Same data, same new isolates — switch the mode and watch the difference.
+       <b>Frozen</b>: new isolates are classified against fixed references → old codes never change.
+       <b>Recompute</b>: the whole tree is rebuilt each time → re-clustering can <b>merge</b> clusters
+       (the <code>bridge</code>) and rewrite codes. (Digit order uses the oldest member, not the medoid,
+       so a medoid shift alone no longer renumbers siblings.)
+       The last arrivals show the <b>blind spots</b>: <code>far</code> = a divergent lineage is seen (new top digit);
+       <code>nov</code> = a novel group within t1 is framed under an existing lineage; <code>twin</code> = sub-threshold
+       novelty is merged (resolution cap).</p>
+    <div class="controls">
+      <div class="ctl">
+        <label>Mode</label>
+        <select id="inv-mode" onchange="resetInv()" style="padding:6px;border-radius:6px;min-width:230px">
+          <option value="frozen" selected>Frozen backbone (classify vs fixed refs)</option>
+          <option value="recompute">Recompute from scratch each time</option>
+        </select>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        <h3 id="inv-h3">Frozen backbone</h3>
+        <table class="codetbl" id="inv-codes"></table>
+        <p id="inv-status" style="margin-top:10px"></p>
+        <button class="act" id="inv-add">➕ A new isolate arrives</button>
+        <button class="ghost act" id="inv-finer">＋ add finer level (t=0)</button>
+        <button class="ghost act" onclick="resetInv()">Reset</button>
+      </div>
+      <div class="col">
+        <h3>What just happened</h3>
+        <div id="inv-explain" class="note">Press the button to bring in a new isolate and watch the codes.</div>
+      </div>
+    </div>
+    <h3>Name tree (updates as isolates arrive)</h3>
+    <p class="sub">✗ = an existing code that changed this step · • = the new arrival · ★ = frozen reference (medoid).
+       In <b>Frozen</b> mode new isolates attach to the nearest ★ and only new leaves appear;
+       in <b>Recompute</b> mode there is no fixed reference, so branches can swap.</p>
+    <svg id="inv-tree" width="100%" height="200" viewBox="0 0 360 200"></svg>
+    <h3>Distance matrix (the actual SNP distances)</h3>
+    <p class="sub">This is why recompute behaves as it does: e.g. <code>bridge</code> is ~10 SNP from <b>both</b> X and Y,
+       so single-linkage merges them; <code>nov</code> is ~6 from Y. Colour: <span class="far">red</span> = &gt; t1
+       (between top clusters), <span class="near">green</span> = within the finest threshold.</p>
+    <div id="inv-dist" style="overflow:auto"></div>
+  </div>
+</section>
+
+<!-- ===================== TAB 4: CONSTELLATION ===================== -->
+<section class="tab" id="tab-const">
+  <div class="card">
+    <h2>Segmented genomes — constellation &amp; readable reassortment</h2>
+    <p class="sub">For a segmented virus (BTV: 10 segments) each segment gets its <b>own</b> path-code.
+       The name is the <b>constellation</b> of all segment codes. When one segment's lineage disagrees with
+       the rest of the genome, that digit lights up — <b>reassortment becomes readable in the name itself</b>.</p>
+    <div class="controls">
+      <div class="ctl">
+        <label>Per-segment threshold t1 = <span class="val" id="const-tval">15</span></label>
+        <input type="range" id="const-t" min="6" max="50" value="15" oninput="renderConst()">
+      </div>
+    </div>
+    <div id="const-table"></div>
+    <h3>Per-segment trees (the reassortant sits on a different branch)</h3>
+    <div id="const-trees" style="display:flex;flex-wrap:wrap;gap:14px"></div>
+    <div class="note" id="const-note"></div>
+    <p class="legend">Each cell = that segment's lineage digit for that isolate. A cell flagged
+       <span class="seg-re">like this</span> is in a different lineage from the rest of that isolate's genome →
+       the segment reassorted in. The whole-genome name (constellation) carries the signal — no separate tree to consult.</p>
+  </div>
+</section>
+
+<!-- ===================== TAB 5: PASTEUR vs INVARIANT ===================== -->
+<section class="tab" id="tab-pasteur">
+  <div class="card">
+    <h2>Two ways to assign names, side by side — add samples and watch who changes</h2>
+    <p class="sub">Same data, two nomenclatures. On the left the <b>authority</b> model (Pasteur/LINbase style):
+       the name is a <b>serial number</b> in arrival order and the "type" is a cluster <b>recomputed every time</b>
+       on the whole dataset. On the right the <b>invariant</b> model: the code is computed against a
+       <b>frozen backbone</b>. Press the button to bring samples in one at a time.</p>
+    <button class="act" id="pv-add">➕ A new isolate arrives</button>
+    <button class="ghost act" onclick="resetPV()">Reset</button>
+    <p id="pv-step" style="margin-top:10px;font-weight:600"></p>
+    <div class="row">
+      <div class="col">
+        <h3 style="color:var(--red)">Authority model (Pasteur-like)</h3>
+        <div id="pv-pasteur"></div>
+        <h3 style="margin-top:10px">Type tree</h3>
+        <svg id="pv-pasteur-tree" width="100%" height="170" viewBox="0 0 320 170"></svg>
+      </div>
+      <div class="col">
+        <h3 style="color:var(--green)">Invariant model (LIN, frozen backbone)</h3>
+        <div id="pv-lin"></div>
+        <h3 style="margin-top:10px">Name tree &nbsp;<span style="font-weight:400;color:var(--gray);font-size:12px">★ = frozen reference (medoid) — new isolates attach to the nearest ★</span></h3>
+        <svg id="pv-lin-tree" width="100%" height="170" viewBox="0 0 320 170"></svg>
+      </div>
+    </div>
+    <h3>Distance matrix (shared metric — why the merge happens)</h3>
+    <p class="sub">Both models use the <b>same distances</b>. <span class="near">green</span> ≤ t (single-linkage would
+       link them), <span class="far">red</span> &gt; t. Watch <code>m</code>: it is ≤ t from <b>both</b> A and B → it bridges them,
+       which is what lets recompute/authority merge the two groups.</p>
+    <div id="pv-dist" style="overflow:auto;margin-bottom:8px"></div>
+    <div class="note" id="pv-explain"></div>
+  </div>
+</section>
+
+</main>
+
+<script>
+/* ============================================================
+   CORE ENGINE  (shared by all tabs)
+   ============================================================ */
+
+// ---- metadata comparator (deterministic tie-break: date, then accession, then index) ----
+function makeMeta(labels){
+  return labels.map((l,i)=>({date:'2018-'+String(i+1).padStart(3,'0'), acc:'ACC'+(100+i), idx:i, label:l}));
+}
+function metaCmp(meta,a,b){
+  if(meta[a].date!==meta[b].date) return meta[a].date<meta[b].date?-1:1;
+  if(meta[a].acc!==meta[b].acc)   return meta[a].acc<meta[b].acc?-1:1;
+  return a-b;
+}
+
+// ---- medoid of a set of original indices (min summed distance, deterministic tie-break) ----
+function medoid(members,D,meta){
+  let best=null,bestSum=Infinity;
+  for(const m of members){
+    let s=0; for(const o of members) s+=D[m][o];
+    if(s<bestSum || (s===bestSum && best!==null && metaCmp(meta,m,best)<0) || best===null){
+      bestSum=s; best=m;
+    }
+  }
+  return best;
+}
+
+// ---- stable ordering key for a cluster: its OLDEST member (discovery-order proxy), NOT the medoid ----
+// the medoid is the node's reference; the digit order uses this stable key so adding members never re-sorts siblings
+function clusterRank(members,meta){
+  let best=members[0];
+  for(const m of members) if(metaCmp(meta,m,best)<0) best=m;
+  return best;
+}
+
+// ---- UPGMA (average linkage); each node carries .merge = the distance at which it formed ----
+function upgma(D,linkage){
+  linkage=linkage||'average';
+  const n=D.length;
+  let act=[];
+  for(let i=0;i<n;i++) act.push({id:i,members:[i],size:1,merge:0,left:null,right:null,_d:{}});
+  for(const a of act) for(const b of act) a._d[b.id]=D[a.id][b.id];
+  let nextId=n;
+  while(act.length>1){
+    let mi=0,mj=1,md=Infinity;
+    for(let i=0;i<act.length;i++) for(let j=i+1;j<act.length;j++){
+      const d=act[i]._d[act[j].id];
+      if(d<md){md=d;mi=i;mj=j;}
+    }
+    const A=act[mi],B=act[mj];
+    const node={id:nextId++,members:A.members.concat(B.members),size:A.size+B.size,
+                merge:md,left:A,right:B,_d:{}};
+    for(const C of act){ if(C===A||C===B) continue;
+      const dac=A._d[C.id], dbc=B._d[C.id];
+      const d = linkage==='single'  ? Math.min(dac,dbc)
+              : linkage==='complete'? Math.max(dac,dbc)
+              :                       (dac*A.size + dbc*B.size)/(A.size+B.size);
+      node._d[C.id]=d; C._d[node.id]=d;
+    }
+    act=act.filter(x=>x!==A&&x!==B); act.push(node);
+  }
+  return act[0];
+}
+
+// ---- clusters obtained by cutting a (sub)tree at threshold t ----
+function clustersAt(node,t){
+  const res=[];
+  (function rec(nd){
+    if(nd.left && nd.merge>t){ rec(nd.left); rec(nd.right); }
+    else res.push(nd);
+  })(node);
+  return res;
+}
+
+// ---- like clustersAt, but also return the height at which each cluster separates from its siblings ----
+function clustersAtH(node,t){
+  const res=[];
+  (function rec(nd,cut){
+    if(nd.left && nd.merge>t){ rec(nd.left,nd.merge); rec(nd.right,nd.merge); }
+    else res.push({nd,cut});
+  })(node,node.merge);
+  return res;
+}
+
+// ---- assign LIN codes: recursive coarse->fine cutting ----
+function assignCodes(root,thresholds,D,meta){
+  const codes={};
+  function rec(node,prefix,level){
+    if(level>=thresholds.length){ for(const lf of node.members) codes[lf]=prefix.slice(); return; }
+    const cls=clustersAt(node,thresholds[level]);
+    const withMed=cls.map(c=>({c,med:medoid(c.members,D,meta)}));
+    withMed.sort((a,b)=>metaCmp(meta,clusterRank(a.c.members,meta),clusterRank(b.c.members,meta)));
+    withMed.forEach((cm,i)=>rec(cm.c,prefix.concat(i+1),level+1));
+  }
+  rec(root,[],0);
+  for(const k in codes) while(codes[k].length<thresholds.length) codes[k].push(1);
+  return codes;
+}
+
+// ---- build a frozen reference tree for classifying NEW isolates ----
+function buildRefTree(root,thresholds,D,meta){
+  function rec(node,level){
+    if(level>=thresholds.length) return {children:null};
+    const cls=clustersAt(node,thresholds[level]);
+    const withMed=cls.map(c=>({c,med:medoid(c.members,D,meta)}));
+    withMed.sort((a,b)=>metaCmp(meta,clusterRank(a.c.members,meta),clusterRank(b.c.members,meta)));
+    return {children:withMed.map((cm,i)=>({digit:i+1,medoid:cm.med,members:cm.c.members,sub:rec(cm.c,level+1)}))};
+  }
+  return rec(root,0);
+}
+
+// ---- classify a new isolate (distance row to all backbone members) against frozen tree ----
+function classifyNew(refTree,thresholds,dnew){
+  const path=[]; let cur=refTree,level=0,newAt=-1;
+  while(level<thresholds.length){
+    const children=cur.children;
+    let best=null,bd=Infinity;
+    for(const ch of children){ const d=dnew[ch.medoid]; if(d<bd){bd=d;best=ch;} }
+    if(bd<=thresholds[level]){ path.push(best.digit); cur=best.sub; level++; }
+    else { path.push(children.length+1); newAt=level; level++;
+           while(path.length<thresholds.length) path.push(1);
+           return {path,isNew:true,newAtLevel:newAt}; }
+  }
+  return {path,isNew:false,newAtLevel:-1};
+}
+
+// ---- distances from 2D coords (rounded euclid) -> proper metric for the demos ----
+function distFromCoords(pts){
+  const n=pts.length, D=Array.from({length:n},()=>Array(n).fill(0));
+  for(let i=0;i<n;i++) for(let j=i+1;j<n;j++){
+    const dx=pts[i][0]-pts[j][0], dy=pts[i][1]-pts[j][1];
+    const d=Math.round(Math.sqrt(dx*dx+dy*dy));
+    D[i][j]=D[j][i]=d;
+  }
+  return D;
+}
+function fmtCode(arr){ return arr.join('.'); }
+
+/* ============================================================
+   DEMO DATA
+   ============================================================ */
+// WNV-like (non-segmented): two lineages, sub-clusters inside.
+const WNV_LABELS=['s1','s2','s3','s4','s5','s6','s7','s8'];
+const WNV_PTS=[[0,0],[2,1],[11,2],[12,1],[11.5,4],[1,40],[3,40],[7,45]];
+let WNV_D=distFromCoords(WNV_PTS);
+// engineered set for the invariance demo (Tab 3): frozen vs recompute
+// X = {x1,x2}, Y = {y1,y2}; arrivals: x3 is X's new CENTRE (medoid moves), far is a new lineage
+const IV_PTS={x1:[0,0],x2:[0,2],y1:[20,0],y2:[20,2],bridge:[10,0],far:[40,1],nov:[14,1],twin:[1,1]};
+const IV_ORDER=['x1','x2','y1','y2','bridge','far','nov','twin'];
+const IV_NB=4;               // frozen backbone = first 4
+let IV_THR=[10,4,2];
+const IV_NOTE={
+  bridge:'<b>bridge</b> sits between X and Y (~10 SNP from both). <b>FROZEN</b>: classified to the nearest frozen '+
+     'reference → it just attaches, X and Y keep their names (0 changed). <b>RECOMPUTE</b>: single-linkage uses it to '+
+     '<b>merge X and Y</b> into one cluster → all of Y is relabelled. This merge is the real instability of re-clustering — '+
+     'no numbering rule avoids it (unlike a medoid re-sort, which we already removed by ordering on the oldest member).',
+  far:'<b>far</b> is clearly divergent (beyond t1 from every reference) → it gets a <b>new top digit</b>: '+
+      'a genuinely novel lineage <b>IS seen</b>. ✓',
+  nov:'<b>nov</b> is a distinct new group, but it sits <b>within t1</b> of a reference (here Y, ~6 SNP). FROZEN <b>frames it UNDER '+
+      'that lineage</b> (code 2.2.x), using Y’s old reference, instead of promoting it to its own top lineage. '+
+      'The novelty is recorded (its own sub-branch) but <b>framed against the frozen scaffold</b> — a representational limit. '+
+      'A versioned re-release would promote it.',
+  twin:'<b>twin</b> is ~1 SNP from x2 — <b>finer than the last threshold</b> (t3=2) → it gets the <b>same code</b> as x1/x2 '+
+       '(resolution cap). This fine-scale novelty is invisible to <b>any</b> threshold scheme until you add a finer level.'
+};
+
+// ---- larger, "corpose" demo matrices (precomputed, paste-ready; also saved as .tsv next to this file) ----
+const WNV24={labels:["WNV1a_1","WNV1a_2","WNV1a_3","WNV1a_4","WNV1a_5","WNV1a_6","WNV1b_1","WNV1b_2","WNV1b_3","WNV1b_4","WNV1b_5","WNV1c_1","WNV1c_2","WNV1c_3","WNV1c_4","WNV2a_1","WNV2a_2","WNV2a_3","WNV2a_4","WNV2b_1","WNV2b_2","WNV2b_3","WNV3_1","WNV3_2"],
+  D:[[0,1,1,1,0,2,11,10,12,11,9,12,16,16,13,70,68,69,69,73,73,72,54,53],
+  [1,0,2,1,2,2,10,9,10,10,8,11,15,15,12,68,66,67,68,72,71,70,53,52],
+  [1,2,0,1,1,3,11,10,12,11,10,13,16,17,14,70,68,69,70,73,73,72,54,53],
+  [1,1,1,0,1,2,11,10,11,11,9,11,15,15,12,69,67,68,69,72,72,71,54,53],
+  [0,2,1,1,0,2,11,10,12,11,10,12,15,16,13,70,68,69,69,73,73,72,55,53],
+  [2,2,3,2,2,0,11,10,11,11,9,10,13,14,11,68,66,67,68,71,71,70,54,53],
+  [11,10,11,11,11,11,0,1,2,0,2,11,15,14,11,60,58,60,60,63,63,62,43,42],
+  [10,9,10,10,10,10,1,0,2,1,1,10,14,13,10,60,59,60,60,63,63,62,44,43],
+  [12,10,12,11,12,11,2,2,0,2,3,10,14,12,10,59,57,58,59,62,61,60,43,42],
+  [11,10,11,11,11,11,0,1,2,0,2,11,15,14,11,60,58,59,60,63,63,62,43,42],
+  [9,8,10,9,10,9,2,1,3,2,0,11,15,14,11,62,60,61,61,65,64,63,45,44],
+  [12,11,13,11,12,10,11,10,10,11,11,0,4,4,1,60,58,59,59,64,63,62,50,49],
+  [16,15,16,15,15,13,15,14,14,15,15,4,0,3,4,58,56,58,58,63,62,61,52,51],
+  [16,15,17,15,16,14,14,13,12,14,14,4,3,0,3,56,54,56,56,61,60,59,49,48],
+  [13,12,14,12,13,11,11,10,10,11,11,1,4,3,0,58,56,58,58,62,62,61,49,48],
+  [70,68,70,69,70,68,60,60,59,60,62,60,58,56,58,0,2,1,1,8,8,7,40,39],
+  [68,66,68,67,68,66,58,59,57,58,60,58,56,54,56,2,0,1,2,9,9,8,39,38],
+  [69,67,69,68,69,67,60,60,58,59,61,59,58,56,58,1,1,0,1,8,8,7,39,39],
+  [69,68,70,69,69,68,60,60,59,60,61,59,58,56,58,1,2,1,0,8,8,7,40,39],
+  [73,72,73,72,73,71,63,63,62,63,65,64,63,61,62,8,9,8,8,0,0,2,37,36],
+  [73,71,73,72,73,71,63,63,61,63,64,63,62,60,62,8,9,8,8,0,0,1,36,36],
+  [72,70,72,71,72,70,62,62,60,62,63,62,61,59,61,7,8,7,7,2,1,0,36,36],
+  [54,53,54,54,55,54,43,44,43,43,45,50,52,49,49,40,39,39,40,37,36,36,0,1],
+  [53,52,53,53,53,53,42,43,42,42,44,49,51,48,48,39,38,39,39,36,36,36,1,0]]};
+
+const LMO30={labels:["OutbreakA_1","OutbreakA_2","OutbreakA_3","OutbreakA_4","OutbreakA_5","OutbreakA_6","OutbreakA_7","OutbreakB_1","OutbreakB_2","OutbreakB_3","OutbreakB_4","OutbreakB_5","OutbreakB_6","CC121_1","CC121_2","CC121_3","CC121_4","CC121_5","CC9_1","CC9_2","CC9_3","CC9_4","CC9_5","Sporadic_1","Sporadic_2","Sporadic_3","Sporadic_4","Sporadic_5","Sporadic_6","Sporadic_7"],
+  D:[[0,1,0,0,1,1,1,18,17,18,18,17,18,21,22,23,21,23,50,51,51,53,51,58,51,55,55,56,50,53],
+  [1,0,0,1,1,1,1,19,18,19,19,17,18,21,22,23,20,22,50,52,51,53,51,58,51,56,55,57,51,54],
+  [0,0,0,0,1,1,1,18,17,18,18,17,18,21,22,23,20,22,50,51,51,53,51,58,51,55,55,56,50,53],
+  [0,1,0,0,1,1,1,18,17,18,18,17,18,21,22,23,20,22,50,51,51,53,51,58,51,55,55,56,50,53],
+  [1,1,1,1,0,1,2,19,18,19,19,18,19,21,21,23,20,22,50,52,51,53,51,58,52,56,56,57,51,54],
+  [1,1,1,1,1,0,1,19,18,19,19,18,18,22,23,24,21,23,51,52,52,53,52,58,51,56,55,57,51,54],
+  [1,1,1,1,2,1,0,18,16,18,17,16,17,21,21,23,20,22,49,51,50,52,51,57,50,54,54,56,50,53],
+  [18,19,18,18,19,19,18,0,1,0,0,1,1,22,21,23,22,23,35,36,36,37,36,39,33,37,37,38,32,35],
+  [17,18,17,17,18,18,16,1,0,1,1,0,1,22,21,23,22,23,36,38,37,39,37,41,34,38,38,39,33,36],
+  [18,19,18,18,19,19,18,0,1,0,1,1,1,23,21,23,22,23,35,37,37,38,36,39,33,37,37,38,32,35],
+  [18,19,18,18,19,19,17,0,1,1,0,1,1,22,21,23,22,23,35,36,36,38,36,40,33,37,37,38,32,35],
+  [17,17,17,17,18,18,16,1,0,1,1,0,1,22,20,22,21,22,36,37,37,38,37,41,34,38,38,39,33,36],
+  [18,18,18,18,19,18,17,1,1,1,1,1,0,23,22,23,23,24,36,37,37,38,37,40,33,37,37,38,32,35],
+  [21,21,21,21,21,22,21,22,22,23,22,22,23,0,2,2,1,1,37,38,37,39,38,55,48,52,53,53,49,52],
+  [22,22,22,22,21,23,21,21,21,21,21,20,22,2,0,2,3,2,35,36,35,37,35,53,46,50,51,50,47,49],
+  [23,23,23,23,23,24,23,23,23,23,23,22,23,2,2,0,3,1,35,36,34,37,35,54,47,51,52,51,48,51],
+  [21,20,20,20,20,21,20,22,22,22,22,21,23,1,3,3,0,2,37,38,37,40,38,55,48,52,53,53,49,52],
+  [23,22,22,22,22,23,22,23,23,23,23,22,24,1,2,1,2,0,36,37,36,38,37,55,48,52,53,52,49,51],
+  [50,50,50,50,50,51,49,35,36,35,35,36,36,37,35,35,37,36,0,2,3,3,1,30,26,28,29,26,28,29],
+  [51,52,51,51,52,52,51,36,38,37,36,37,37,38,36,36,38,37,2,0,2,2,1,31,27,29,31,28,30,31],
+  [51,51,51,51,51,52,50,36,37,37,36,37,37,37,35,34,37,36,3,2,0,3,2,32,28,30,32,29,31,32],
+  [53,53,53,53,53,53,52,37,39,38,38,38,38,39,37,37,40,38,3,2,3,0,2,30,27,28,30,27,30,30],
+  [51,51,51,51,51,52,51,36,37,36,36,37,37,38,35,35,38,37,1,1,2,2,0,30,27,28,30,27,29,30],
+  [58,58,58,58,58,58,57,39,41,39,40,41,40,55,53,54,55,55,30,31,32,30,30,0,7,3,3,3,8,5],
+  [51,51,51,51,52,51,50,33,34,33,33,34,33,48,46,47,48,48,26,27,28,27,27,7,0,4,5,6,3,4],
+  [55,56,55,55,56,56,54,37,38,37,37,38,37,52,50,51,52,52,28,29,30,28,28,3,4,0,2,2,6,3],
+  [55,55,55,55,56,55,54,37,38,37,37,38,37,53,51,52,53,53,29,31,32,30,30,3,5,2,0,4,5,2],
+  [56,57,56,56,57,57,56,38,39,38,38,39,38,53,50,51,53,52,26,28,29,27,27,3,6,2,4,0,8,6],
+  [50,51,50,50,51,51,50,32,33,32,32,33,32,49,47,48,49,49,28,30,31,30,29,8,3,6,5,8,0,3],
+  [53,54,53,53,54,54,53,35,36,35,35,36,35,52,49,51,52,51,29,31,32,30,30,5,4,3,2,6,3,0]]};
+
+// dataset registry: matrix + sensible default thresholds for each
+const DATASETS={
+  wnv8 :{labels:WNV_LABELS, D:WNV_D,        thr:[20,6,3]},
+  wnv24:{labels:WNV24.labels,D:WNV24.D,     thr:[25,8,3]},
+  lmo30:{labels:LMO30.labels,D:LMO30.D,     thr:[20,6,2]},
+};
+
+let treeThresholds=[25,8,3];
+
+/* ============================================================
+   TAB 1 — TREE -> CODE
+   ============================================================ */
+let curTreeD=WNV_D, curTreeLabels=WNV_LABELS;
+
+function buildTreeControls(){
+  const c=document.getElementById('tree-ctls'); c.innerHTML='';
+  let maxD=1; for(let i=0;i<curTreeD.length;i++) for(let j=i+1;j<curTreeD.length;j++) if(curTreeD[i][j]>maxD) maxD=curTreeD[i][j];
+  const hi=Math.max(2,Math.ceil(maxD*1.1));
+  treeThresholds.forEach((t,i)=>{
+    const d=document.createElement('div'); d.className='ctl';
+    d.innerHTML=`<label>t${i+1} = <span class="val" id="tt${i}">${t}</span> SNP</label>`;
+    const inp=document.createElement('input'); inp.type='range';
+    inp.min=1; inp.max=hi; inp.value=Math.min(t,hi);
+    inp.oninput=()=>{treeThresholds[i]=+inp.value; document.getElementById('tt'+i).textContent=inp.value; renderTree();};
+    d.appendChild(inp); c.appendChild(d);
+  });
+  // add / remove threshold levels (= number of digits in the code)
+  const box=document.createElement('div'); box.className='ctl';
+  box.innerHTML=`<label>Levels = code digits (${treeThresholds.length})</label>`;
+  const bar=document.createElement('div');
+  const add=document.createElement('button'); add.className='ghost act'; add.textContent='＋ level';
+  add.style.marginRight='6px';
+  add.onclick=()=>{ const last=treeThresholds[treeThresholds.length-1]; treeThresholds.push(Math.max(1,Math.round(last/2))); buildTreeControls(); renderTree(); };
+  const rem=document.createElement('button'); rem.className='ghost act'; rem.textContent='− level';
+  rem.onclick=()=>{ if(treeThresholds.length>1){ treeThresholds.pop(); buildTreeControls(); renderTree(); } };
+  bar.appendChild(add); bar.appendChild(rem); box.appendChild(bar); c.appendChild(box);
+}
+
+function renderTree(){
+  const D=curTreeD, labels=curTreeLabels, meta=makeMeta(labels);
+  const root=upgma(D, document.getElementById('tree-linkage').value);
+  const codes=assignCodes(root,treeThresholds,D,meta);
+  const view=document.getElementById('tree-view').value;
+  if(view==='lintree')   drawLINTree(root,treeThresholds,D,meta,labels,codes);
+  else if(view==='mst')  drawMST(D,labels,treeThresholds);
+  else                   drawDendro(root,labels,codes,treeThresholds);
+  // live cluster counts per level (changes as you drag — proof the sliders work)
+  const counts=treeThresholds.map(t=>clustersAt(root,t).length);
+  document.getElementById('tree-live').textContent=
+    `Thresholds [${treeThresholds.join(', ')}] · clusters per level: `+
+    counts.map((n,i)=>`t${i+1}→${n}`).join('   ')+
+    `   ·   distinct codes: ${new Set(labels.map((l,i)=>fmtCode(codes[i]))).size}`;
+  drawHist(D,treeThresholds);
+  // code table
+  const tbl=document.getElementById('tree-codes');
+  let h='<tr><th>Isolate</th><th>LIN code</th></tr>';
+  labels.forEach((l,i)=>{ h+=`<tr><td>${l}</td><td class="lincode">${fmtCode(codes[i])}</td></tr>`; });
+  tbl.innerHTML=h;
+}
+
+function drawDendro(root,labels,codes,thr){
+  const leaves=[]; (function collect(n){ if(!n.left){leaves.push(n);return;} collect(n.left);collect(n.right);})(root);
+  const maxLabel=Math.max(...labels.map(l=>l.length));
+  const W=680, padL=Math.max(28,maxLabel*7+10), padR=92, padT=22, padB=40;
+  const H=Math.max(360, leaves.length*15 + padT + padB);
+  const svgEl=document.getElementById('dendro');
+  svgEl.setAttribute('viewBox',`0 0 ${W} ${H}`); svgEl.setAttribute('height',H);
+  const maxH=Math.max(root.merge,thr[0])*1.12+1;
+  const plotW=W-padL-padR, plotH=H-padT-padB;
+  const xOf=d=>padL+(d/maxH)*plotW;          // distance -> x (root at right)
+  const ys={}; leaves.forEach((lf,i)=> ys[lf.id]=padT+(i+0.5)/leaves.length*plotH );
+  const palette=['#1e5a96','#288c5a','#e19628','#be3737','#784696','#0f8a8a','#a7561c','#555'];
+  // color by first two digits
+  const groupKey=i=>codes[i].slice(0,2).join('.');
+  const keys=[...new Set(labels.map((l,i)=>groupKey(i)))];
+  const colorOf=i=>palette[keys.indexOf(groupKey(i))%palette.length];
+  // a branch is coloured if its whole subtree is one group; otherwise grey (a join above the group level)
+  const nodeColor=n=>{ const g=new Set(n.members.map(i=>groupKey(i))); return g.size===1?colorOf(n.members[0]):'#9aa7b4'; };
+
+  let svg='';
+  // threshold vertical lines
+  thr.forEach((t,i)=>{
+    const x=xOf(t);
+    svg+=`<line x1="${x}" y1="${padT-6}" x2="${x}" y2="${H-padB}" stroke="#be3737" stroke-dasharray="5 4" stroke-width="1.4" opacity="0.8"/>`;
+    svg+=`<text x="${x}" y="${padT-9}" fill="#be3737" font-size="11" text-anchor="middle">t${i+1}=${t}</text>`;
+  });
+  // recursive draw; returns y of node
+  function yOfNode(n){ if(!n.left) return ys[n.id]; return (yOfNode(n.left)+yOfNode(n.right))/2; }
+  (function draw(n){
+    if(!n.left){
+      const y=ys[n.id], i=n.members[0];
+      svg+=`<circle cx="${padL}" cy="${y}" r="3.5" fill="${colorOf(i)}"/>`;
+      svg+=`<text x="${padL-6}" y="${y+4}" font-size="11" text-anchor="end" fill="#1c2530">${labels[i]}</text>`;
+      svg+=`<text x="${W-padR+8}" y="${y+4}" font-size="11" fill="${colorOf(i)}">${fmtCode(codes[i])}</text>`;
+      return;
+    }
+    draw(n.left); draw(n.right);
+    const yl=yOfNode(n.left), yr=yOfNode(n.right);
+    const xj=xOf(n.merge), xl=xOf(n.left.left?n.left.merge:0), xr=xOf(n.right.left?n.right.merge:0);
+    const colJ=nodeColor(n), colL=nodeColor(n.left), colR=nodeColor(n.right);
+    const w=colJ==='#9aa7b4'?1.4:2;
+    svg+=`<line x1="${xj}" y1="${yl}" x2="${xl}" y2="${yl}" stroke="${colL}" stroke-width="${colL==='#9aa7b4'?1.4:2}"/>`;
+    svg+=`<line x1="${xj}" y1="${yr}" x2="${xr}" y2="${yr}" stroke="${colR}" stroke-width="${colR==='#9aa7b4'?1.4:2}"/>`;
+    svg+=`<line x1="${xj}" y1="${yl}" x2="${xj}" y2="${yr}" stroke="${colJ}" stroke-width="${w}"/>`;
+  })(root);
+  // axis
+  svg+=`<line x1="${padL}" y1="${H-padB}" x2="${W-padR}" y2="${H-padB}" stroke="#aab" stroke-width="1"/>`;
+  svg+=`<text x="${padL}" y="${H-padB+18}" font-size="10" fill="#788">0</text>`;
+  svg+=`<text x="${(padL+W-padR)/2}" y="${H-padB+18}" font-size="10" fill="#788" text-anchor="middle">distance (SNP) →</text>`;
+  document.getElementById('dendro').innerHTML=svg;
+}
+
+// ---- alternative view: the LIN tree (nodes = clusters labelled by their code), like the slides ----
+function drawLINTree(root,thresholds,D,meta,labels,codes){
+  function build(node,level,prefix,cut){
+    if(level>=thresholds.length) return {code:prefix,leaf:true,cut,isolates:node.members.slice().sort((a,b)=>a-b)};
+    const cls=clustersAtH(node,thresholds[level]);
+    const split=cls.length>1;   // only label the edge when a real separation happened here
+    const wm=cls.map(c=>({c:c.nd,cut:split?c.cut:null,med:medoid(c.nd.members,D,meta)})).sort((a,b)=>metaCmp(meta,clusterRank(a.c.members,meta),clusterRank(b.c.members,meta)));
+    return {code:prefix,cut,children:wm.map((cm,i)=>build(cm.c,level+1,prefix.concat(i+1),cm.cut))};
+  }
+  const tree=build(root,0,[],root.merge);
+  const order=[]; (function rec(n){ if(n.leaf) n.isolates.forEach(i=>order.push(i)); else n.children.forEach(rec); })(tree);
+  const nLeaf=order.length, maxLabel=Math.max(...labels.map(l=>l.length));
+  const padT=26,padB=26,padL=34,padR=Math.max(130,maxLabel*7+80), W=720;
+  const H=Math.max(360, nLeaf*16+padT+padB);
+  const maxDepth=thresholds.length+1, dx=(W-padL-padR)/maxDepth;
+  const yOfIso={}; order.forEach((iso,i)=> yOfIso[iso]=padT+(i+0.5)*((H-padT-padB)/nLeaf));
+  const palette=['#1e5a96','#288c5a','#e19628','#be3737','#784696','#0f8a8a','#a7561c','#555'];
+  const groupKey=i=>codes[i].slice(0,2).join('.');
+  const keys=[...new Set(order.map(groupKey))];
+  const cIso=i=>palette[keys.indexOf(groupKey(i))%palette.length];
+  const cSet=isos=>{const g=new Set(isos.map(groupKey)); return g.size===1?cIso(isos[0]):'#9aa7b4';};
+  const members=n=>n.leaf?n.isolates:n.children.flatMap(members);
+  let svg='';
+  // dashed threshold guides, behind the tree — one per level, at the cut boundary (where t_l is applied)
+  const tcols=['#be3737','#288c5a','#e19628','#784696','#0f8a8a','#a7561c'];
+  for(let l=1;l<=thresholds.length;l++){
+    const bx=padL+(l-0.5)*dx, col=tcols[(l-1)%tcols.length];
+    svg+=`<line x1="${bx}" y1="${padT}" x2="${bx}" y2="${H-padB}" stroke="${col}" stroke-width="1.3" stroke-dasharray="5 4" opacity="0.5"/>`;
+  }
+  (function place(n){
+    const ms=members(n); n._ms=ms;
+    n._x=padL+n.code.length*dx;
+    n._y=ms.reduce((s,i)=>s+yOfIso[i],0)/ms.length;
+    if(n.leaf){
+      const ix=padL+maxDepth*dx;
+      n.isolates.forEach(iso=>{ const iy=yOfIso[iso];
+        svg+=`<line x1="${n._x}" y1="${n._y}" x2="${ix}" y2="${iy}" stroke="${cIso(iso)}" stroke-width="1.5"/>`;
+        svg+=`<circle cx="${ix}" cy="${iy}" r="3.5" fill="${cIso(iso)}"/>`;
+        svg+=`<text x="${ix+7}" y="${iy+4}" font-size="11" fill="#1c2530">${labels[iso]}</text>`;
+        svg+=`<text x="${ix+9+maxLabel*7}" y="${iy+4}" font-size="10" fill="${cIso(iso)}">${codes[iso].join('.')}</text>`;
+      });
+    } else n.children.forEach(ch=>{ place(ch);
+      const col=cSet(ch._ms);
+      svg+=`<line x1="${n._x}" y1="${n._y}" x2="${ch._x}" y2="${ch._y}" stroke="${col}" stroke-width="${col==='#9aa7b4'?1.4:2}"/>`;
+      // edge label: red distance where a split happened; grey "≤t" where there is NO subdivision
+      const lx=n._x+(ch._x-n._x)*0.5, ly=(n._y+ch._y)/2;
+      if(ch.cut!=null){
+        const h=Math.round(ch.cut*10)/10;
+        svg+=`<rect x="${lx-11}" y="${ly-9}" width="22" height="12" rx="2" fill="#fff" opacity="0.85"/>`;
+        svg+=`<text x="${lx}" y="${ly}" font-size="10" font-weight="bold" text-anchor="middle" fill="#be3737">${h}</text>`;
+      } else {
+        svg+=`<rect x="${lx-13}" y="${ly-9}" width="26" height="12" rx="2" fill="#fff" opacity="0.7"/>`;
+        svg+=`<text x="${lx}" y="${ly}" font-size="8" text-anchor="middle" fill="#9aa7b4">≤t${n.code.length+1}</text>`;
+      }
+    });
+  })(tree);
+  (function nodes(n){
+    const col=cSet(n._ms), sc=col==='#9aa7b4'?'#5a6b7d':col, isRoot=n.code.length===0;
+    svg+=`<circle cx="${n._x}" cy="${n._y}" r="${isRoot?11:10}" fill="#fff" stroke="${sc}" stroke-width="2"/>`;
+    svg+=`<text x="${n._x}" y="${n._y+4}" font-size="11" text-anchor="middle" fill="${sc}">${isRoot?'R':n.code[n.code.length-1]}</text>`;
+    if(!n.leaf) n.children.forEach(nodes);
+  })(tree);
+  svg+=`<text x="${padL}" y="14" font-size="9" fill="#9aa7b4" text-anchor="middle">root</text>`;
+  for(let l=1;l<=thresholds.length;l++){
+    const bx=padL+(l-0.5)*dx, col=tcols[(l-1)%tcols.length];
+    svg+=`<text x="${bx}" y="14" font-size="9" font-weight="bold" fill="${col}" text-anchor="middle">t${l}=${thresholds[l-1]}</text>`;
+  }
+  svg+=`<text x="${padL+maxDepth*dx}" y="14" font-size="9" fill="#9aa7b4" text-anchor="middle">isolates → code</text>`;
+  const el=document.getElementById('dendro');
+  el.setAttribute('viewBox',`0 0 ${W} ${H}`); el.setAttribute('height',H); el.innerHTML=svg;
+}
+
+// ---- MST view: single linkage IS the minimum spanning tree; cutting edges > t gives the clusters ----
+function drawMST(D,labels,thr){
+  const n=D.length;
+  const inMST=Array(n).fill(false), parent=Array(n).fill(-1), dist=Array(n).fill(Infinity); dist[0]=0;
+  for(let it=0;it<n;it++){
+    let u=-1,best=Infinity;
+    for(let v=0;v<n;v++) if(!inMST[v]&&dist[v]<best){best=dist[v];u=v;}
+    if(u<0)break; inMST[u]=true;
+    for(let v=0;v<n;v++) if(!inMST[v]&&D[u][v]<dist[v]){dist[v]=D[u][v];parent[v]=u;}
+  }
+  const children=Array.from({length:n},()=>[]);
+  for(let v=0;v<n;v++) if(parent[v]>=0) children[parent[v]].push(v);
+  const maxLabel=Math.max(...labels.map(l=>l.length));
+  const W=720,padL=26,padR=Math.max(90,maxLabel*7+24),padT=26,padB=22;
+  const depth=Array(n).fill(0); (function setD(u,d){depth[u]=d;children[u].forEach(c=>setD(c,d+1));})(0,0);
+  const maxDepth=Math.max(1,...depth), dx=(W-padL-padR)/maxDepth;
+  const leaves=[]; (function dfs(u){ if(!children[u].length) leaves.push(u); else children[u].forEach(dfs); })(0);
+  const H=Math.max(320, leaves.length*22+padT+padB);
+  const leafY={}; leaves.forEach((u,i)=> leafY[u]=padT+(i+0.5)*((H-padT-padB)/leaves.length));
+  const yOf={}; (function setY(u){ if(!children[u].length){yOf[u]=leafY[u];return yOf[u];} const ys=children[u].map(setY); yOf[u]=ys.reduce((a,b)=>a+b,0)/ys.length; return yOf[u]; })(0);
+  const xOf=u=>padL+depth[u]*dx;
+  const tcols=['#be3737','#288c5a','#e19628','#784696','#0f8a8a','#a7561c'];
+  // coarsest threshold (largest value) that cuts the edge — robust to non-monotonic slider positions
+  const edgeLevel=d=>{ let b=-1,bv=-Infinity; for(let l=0;l<thr.length;l++) if(d>thr[l]&&thr[l]>bv){bv=thr[l];b=l;} return b; };
+  // colour key: a swatch + value for each threshold, then grey for "within cluster"
+  let svg=`<text x="${padL}" y="11" font-size="9" fill="#555">edge cut by →</text>`;
+  let lxx=padL+78;
+  thr.forEach((t,i)=>{ const c=tcols[i%tcols.length], lab=`t${i+1}=${t}`;
+    svg+=`<line x1="${lxx}" y1="8" x2="${lxx+16}" y2="8" stroke="${c}" stroke-width="2.6" stroke-dasharray="5 4"/>`;
+    svg+=`<text x="${lxx+20}" y="11" font-size="9" font-weight="bold" fill="${c}">${lab}</text>`;
+    lxx+=20+lab.length*6+14;
+  });
+  svg+=`<line x1="${lxx}" y1="8" x2="${lxx+16}" y2="8" stroke="#9aa7b4" stroke-width="2.6"/>`;
+  svg+=`<text x="${lxx+20}" y="11" font-size="9" fill="#9aa7b4">≤ t${thr.length} (within cluster)</text>`;
+  for(let v=0;v<n;v++){ if(parent[v]<0)continue; const u=parent[v], d=D[u][v];
+    const lev=edgeLevel(d), cut=lev>=0, col=cut?tcols[lev%tcols.length]:'#9aa7b4', dash=cut?'stroke-dasharray="5 4"':'';
+    svg+=`<line x1="${xOf(u)}" y1="${yOf[u]}" x2="${xOf(v)}" y2="${yOf[v]}" stroke="${col}" stroke-width="${cut?2.8:1.3}" ${dash}/>`;
+    const mx=(xOf(u)+xOf(v))/2, my=(yOf[u]+yOf[v])/2, tag=cut?` t${lev+1}`:'';
+    svg+=`<rect x="${mx-15}" y="${my-9}" width="30" height="12" rx="2" fill="#fff" opacity="0.9"/>`;
+    svg+=`<text x="${mx}" y="${my}" font-size="9" font-weight="bold" text-anchor="middle" fill="${col}">${d}${tag}</text>`;
+  }
+  for(let u=0;u<n;u++){
+    svg+=`<circle cx="${xOf(u)}" cy="${yOf[u]}" r="4" fill="#1e5a96"/>`;
+    if(!children[u].length) svg+=`<text x="${xOf(u)+7}" y="${yOf[u]+4}" font-size="11" fill="#1c2530">${labels[u]}</text>`;
+    else svg+=`<text x="${xOf(u)}" y="${yOf[u]-7}" font-size="9" fill="#555" text-anchor="middle">${labels[u]}</text>`;
+  }
+  const el=document.getElementById('dendro'); el.setAttribute('viewBox',`0 0 ${W} ${H}`); el.setAttribute('height',H); el.innerHTML=svg;
+}
+
+// ---- generic "name tree": build a prefix-tree (trie) from the codes and draw R → digits → isolates ----
+// codes: array of strings like "1.2.1"; opts.mark: {isoIndex: 'changed'|'new'}
+function drawCodeTrie(labels,codes,elId,opts){
+  opts=opts||{}; const mark=opts.mark||{};
+  const root={children:{},isos:[],digit:'R'}; let maxDepth=0;
+  codes.forEach((c,i)=>{ const parts=String(c).split('.'); maxDepth=Math.max(maxDepth,parts.length);
+    let node=root; parts.forEach(p=>{ node.children[p]=node.children[p]||{children:{},isos:[],digit:p}; node=node.children[p]; }); node.isos.push(i); });
+  const order=[]; (function dfs(n){ const ks=Object.keys(n.children).sort((a,b)=>(+a)-(+b));
+    if(!ks.length){ n.isos.forEach(i=>order.push(i)); return; } ks.forEach(k=>dfs(n.children[k])); })(root);
+  const nLeaf=order.length||1, maxLabel=Math.max(...labels.map(l=>l.length),1);
+  const W=Math.max(320,(maxDepth+1)*64+maxLabel*7+40), padL=22, padR=Math.max(64,maxLabel*7+22), padT=14, padB=14;
+  const H=Math.max(110,nLeaf*22+padT+padB), dx=(W-padL-padR)/(maxDepth+1);
+  const yOf={}; order.forEach((iso,i)=> yOf[iso]=padT+(i+0.5)*((H-padT-padB)/nLeaf));
+  const pal=['#1e5a96','#288c5a','#e19628','#be3737','#784696','#0f8a8a','#a7561c'];
+  const top=i=>String(codes[i]).split('.')[0]; const tops=[...new Set(order.map(top))];
+  const cIso=i=>pal[tops.indexOf(top(i))%pal.length];
+  const nodeIsos=n=>{const ks=Object.keys(n.children); return ks.length?ks.flatMap(k=>nodeIsos(n.children[k])):n.isos;};
+  const cNode=n=>{const is=nodeIsos(n); return is.length?cIso(is[0]):'#5a6b7d';};
+  let svg='';
+  // optional threshold guides: dashed line + label at each level boundary (x-axis here is the level)
+  if(opts.thresholds){
+    const tcols=['#be3737','#288c5a','#e19628','#784696','#0f8a8a','#a7561c'];
+    opts.thresholds.forEach((t,l)=>{ const bx=padL+(l+0.5)*dx, c=tcols[l%tcols.length];
+      svg+=`<line x1="${bx}" y1="${padT}" x2="${bx}" y2="${H-padB}" stroke="${c}" stroke-width="1.2" stroke-dasharray="5 4" opacity="0.5"/>`;
+      svg+=`<text x="${bx}" y="${padT-3}" font-size="8" font-weight="bold" fill="${c}" text-anchor="middle">t${l+1}=${t}</text>`;
+    });
+  }
+  (function place(n,depth){
+    const is=nodeIsos(n); n._x=padL+depth*dx; n._y=is.reduce((s,i)=>s+yOf[i],0)/is.length;
+    const ks=Object.keys(n.children).sort((a,b)=>(+a)-(+b));
+    if(!ks.length){ n.isos.forEach(i=>{ const iy=yOf[i], ix=padL+(maxDepth+1)*dx, col=cIso(i), mk=mark[i];
+        const star=(opts.star&&opts.star.has(i))?' ★':'';
+        svg+=`<line x1="${n._x}" y1="${n._y}" x2="${ix}" y2="${iy}" stroke="${col}" stroke-width="1.4"/>`;
+        svg+=`<circle cx="${ix}" cy="${iy}" r="3" fill="${mk==='changed'?'#be3737':col}"/>`;
+        svg+=`<text x="${ix+6}" y="${iy+4}" font-size="10" fill="${mk==='changed'?'#be3737':col}" ${mk?'font-weight="bold"':''}>${labels[i]}${star}${mk==='new'?' •':mk==='changed'?' ✗':''}</text>`; }); }
+    else ks.forEach(k=>{ place(n.children[k],depth+1);
+      svg+=`<line x1="${n._x}" y1="${n._y}" x2="${n.children[k]._x}" y2="${n.children[k]._y}" stroke="${cNode(n.children[k])}" stroke-width="1.6"/>`; });
+  })(root,0);
+  (function nodes(n,depth){ const col=depth===0?'#5a6b7d':cNode(n);
+    svg+=`<circle cx="${n._x}" cy="${n._y}" r="${depth===0?10:9}" fill="#fff" stroke="${col}" stroke-width="2"/>`;
+    svg+=`<text x="${n._x}" y="${n._y+4}" font-size="10" text-anchor="middle" fill="${col}">${depth===0?'R':n.digit}</text>`;
+    Object.keys(n.children).forEach(k=>nodes(n.children[k],depth+1)); })(root,0);
+  const el=document.getElementById(elId); el.setAttribute('viewBox',`0 0 ${W} ${H}`); el.setAttribute('height',H); el.innerHTML=svg;
+}
+
+// ---- histogram of all pairwise distances, with thresholds overlaid (helps place thresholds in gaps) ----
+function drawHist(D,thr){
+  const vals=[]; for(let i=0;i<D.length;i++) for(let j=i+1;j<D.length;j++) vals.push(D[i][j]);
+  const max=Math.max(...vals,...thr)*1.05+1;
+  const W=640,H=175,padL=34,padR=12,padT=18,padB=28, nbins=40, binW=max/nbins;
+  const bins=Array(nbins).fill(0);
+  vals.forEach(v=>{ let b=Math.floor(v/binW); if(b>=nbins)b=nbins-1; if(b<0)b=0; bins[b]++; });
+  const maxCount=Math.max(...bins,1), plotW=W-padL-padR, plotH=H-padT-padB;
+  const x=v=>padL+(v/max)*plotW;
+  let svg='';
+  bins.forEach((c,b)=>{ if(!c)return; const bx=x(b*binW), bw=Math.max(1,plotW/nbins-1), bh=(c/maxCount)*plotH;
+    svg+=`<rect x="${bx}" y="${padT+plotH-bh}" width="${bw}" height="${bh}" fill="#9bb4cc"/>`; });
+  svg+=`<line x1="${padL}" y1="${padT+plotH}" x2="${W-padR}" y2="${padT+plotH}" stroke="#aab"/>`;
+  for(let k=0;k<=4;k++){ const v=Math.round(max*k/4); svg+=`<text x="${x(v)}" y="${H-9}" font-size="9" fill="#788" text-anchor="middle">${v}</text>`; }
+  svg+=`<text x="${W-padR}" y="${H-9}" font-size="9" fill="#788" text-anchor="end">SNP →</text>`;
+  svg+=`<text x="${padL-4}" y="${padT+8}" font-size="9" fill="#788" text-anchor="end">n°</text>`;
+  const cols=['#be3737','#288c5a','#e19628','#784696','#0f8a8a','#a7561c'];
+  thr.forEach((t,i)=>{ const tx=x(t), c=cols[i%cols.length];
+    svg+=`<line x1="${tx}" y1="${padT-4}" x2="${tx}" y2="${padT+plotH}" stroke="${c}" stroke-width="1.6" stroke-dasharray="5 3"/>`;
+    svg+=`<text x="${tx}" y="${padT-6}" font-size="9" fill="${c}" text-anchor="middle">t${i+1}=${t}</text>`;
+  });
+  document.getElementById('disthist').innerHTML=svg;
+}
+
+function matrixToText(D,labels){
+  let t='\t'+labels.join('\t')+'\n';   // leading empty corner cell so the header lines up over the columns
+  D.forEach((r,i)=>{ t+=labels[i]+'\t'+r.join('\t')+'\n'; });
+  return t;
+}
+function parseMatrix(text){
+  const lines=text.trim().split(/\r?\n/).filter(x=>x.trim());
+  const header=lines[0].split(/[\t,]+/).slice(1);
+  const labels=[], rows=[];
+  for(let i=1;i<lines.length;i++){
+    const parts=lines[i].split(/[\t,]+/);
+    labels.push(parts[0]);
+    rows.push(parts.slice(1).map(Number));
+  }
+  return {labels,D:rows};
+}
+function loadTreeMatrix(){
+  try{
+    const {labels,D}=parseMatrix(document.getElementById('tree-matrix').value);
+    if(D.length<2||D.some(r=>r.length!==D.length)) throw 0;
+    curTreeD=D; curTreeLabels=labels; renderGrid(); renderTree();
+  }catch(e){ alert('Could not parse matrix — need a square, symmetric numeric matrix with labels.'); }
+}
+function switchDataset(){
+  const key=document.getElementById('tree-dataset').value;
+  const ds=DATASETS[key];
+  curTreeD=ds.D.map(r=>r.slice());          // clone so grid edits don't corrupt the demo data
+  curTreeLabels=ds.labels.slice();
+  treeThresholds=ds.thr.slice();
+  buildTreeControls();
+  document.getElementById('tree-matrix').value=matrixToText(curTreeD,curTreeLabels);
+  renderGrid();
+  renderTree();
+}
+
+// spreadsheet-style editable grid for the distance matrix (symmetric, live)
+function syncMatrixText(){ document.getElementById('tree-matrix').value=matrixToText(curTreeD,curTreeLabels); }
+function renderGrid(){
+  const D=curTreeD, L=curTreeLabels, n=L.length;
+  let h='<tr><th class="corner"></th>';
+  L.forEach((l,j)=> h+=`<th class="lbl"><input data-lbl="${j}" value="${l}"></th>`);
+  h+='</tr>';
+  for(let i=0;i<n;i++){
+    h+=`<tr><th class="lbl"><input data-lbl="${i}" value="${L[i]}"></th>`;
+    for(let j=0;j<n;j++){
+      h+= i===j ? `<td class="diag"><input value="0" disabled></td>`
+                : `<td><input data-i="${i}" data-j="${j}" value="${D[i][j]}"></td>`;
+    }
+    h+='</tr>';
+  }
+  const t=document.getElementById('tree-grid'); t.innerHTML=h;
+  t.querySelectorAll('input[data-i]').forEach(inp=>{
+    inp.onchange=()=>{ const i=+inp.dataset.i, j=+inp.dataset.j, v=Math.max(0,Math.round(+inp.value)||0);
+      inp.value=v; curTreeD[i][j]=v; curTreeD[j][i]=v;
+      const m=t.querySelector(`input[data-i="${j}"][data-j="${i}"]`); if(m) m.value=v;
+      syncMatrixText(); renderTree();
+    };
+  });
+  t.querySelectorAll('input[data-lbl]').forEach(inp=>{
+    inp.onchange=()=>{ const k=+inp.dataset.lbl; curTreeLabels[k]=inp.value;
+      t.querySelectorAll(`input[data-lbl="${k}"]`).forEach(x=>x.value=inp.value);
+      syncMatrixText(); renderTree();
+    };
+  });
+}
+function resetTree(){
+  document.getElementById('tree-dataset').value='wnv24';
+  switchDataset();
+}
+
+/* ============================================================
+   TAB 2 — SPLIT vs MEDOID
+   ============================================================ */
+const SPLIT_SETS={
+  A:{labels:['s1','s2','s3','s4','s5'],
+     D:[[0,2,9,10,9],[2,0,9,9,10],[9,9,0,1,2],[10,9,1,0,2],[9,10,2,2,0]]},
+  B:{labels:['s1','s2','s3','s4','s5'],
+     D:[[0,2,3,1,2],[2,0,2,3,1],[3,2,0,2,2],[1,3,2,0,3],[2,1,2,3,0]]},
+};
+// connected components under single linkage at threshold t
+function componentsAt(D,t){
+  const n=D.length, seen=Array(n).fill(false), comps=[];
+  for(let i=0;i<n;i++){ if(seen[i])continue; const st=[i],c=[]; seen[i]=true;
+    while(st.length){ const u=st.pop(); c.push(u);
+      for(let v=0;v<n;v++) if(!seen[v]&&v!==u&&D[u][v]<=t){seen[v]=true;st.push(v);} }
+    comps.push(c.sort((a,b)=>a-b)); }
+  return comps;
+}
+function renderSplit(){
+  const which=document.getElementById('split-which').value;
+  const t=+document.getElementById('split-t').value;
+  document.getElementById('split-tval').textContent=t;
+  const {labels,D}=SPLIT_SETS[which];
+  const meta=makeMeta(labels);
+  const sums=D.map(r=>r.reduce((a,b)=>a+b,0));
+  const minSum=Math.min(...sums);
+  const med=medoid([...labels.keys()],D,meta);
+  // table
+  let h='<table class="dist"><tr><th></th>'+labels.map(l=>`<th>${l}</th>`).join('')+'<th>Σ</th></tr>';
+  D.forEach((r,i)=>{
+    h+=`<tr${i===med?' class="medrow"':''}><th>${labels[i]}</th>`;
+    r.forEach((v,j)=>{ h+= i===j?'<td>–</td>':`<td>${v}</td>`; });
+    h+=`<td class="${sums[i]===minSum?'medcell':''}">${sums[i]}</td></tr>`;
+  });
+  h+='</table>';
+  document.getElementById('split-table').innerHTML=h;
+  // decision
+  const comps=componentsAt(D,t);
+  let dec='';
+  if(comps.length>1){
+    dec=`<span class="pill split">ABOVE t → SPLIT</span>`;
+    dec+=`<p>At t=${t} the set breaks into <b>${comps.length}</b> clusters that are more than ${t} apart.
+          Each gets its own digit — no arbitrary choice:</p><ul>`;
+    comps.forEach((c,i)=>{ dec+=`<li>{${c.map(x=>labels[x]).join(', ')}} → digit <span class="lincode">.${i+1}</span></li>`; });
+    dec+='</ul>';
+  } else {
+    const ties=labels.map((l,i)=>i).filter(i=>sums[i]===minSum);
+    dec=`<span class="pill med">BELOW t → MEDOID</span>`;
+    dec+=`<p>At t=${t} everything is within threshold → <b>one cluster</b>. To pick a representative, take the
+          <b>medoid</b> = min Σ (= ${minSum}): ${ties.map(i=>labels[i]).join(', ')}.</p>`;
+    dec+=`<p>Tie-break (earliest date, then accession) → <b class="lincode">${labels[med]}</b>
+          becomes the node reference.</p>`;
+  }
+  document.getElementById('split-decision').innerHTML=dec;
+  drawSplitTree(D,labels,t);
+}
+
+// single-linkage tree (LIN-tree style) for the Split tab: R → one node per cluster → isolates, medoid starred
+function drawSplitTree(D,labels,t){
+  const root=upgma(D,'single');
+  const meta=makeMeta(labels);
+  const withMed=clustersAtH(root,t).map(c=>({nd:c.nd,cut:c.cut,med:medoid(c.nd.members,D,meta)}))
+                                   .sort((a,b)=>metaCmp(meta,clusterRank(a.nd.members,meta),clusterRank(b.nd.members,meta)));
+  const split=withMed.length>1;
+  const order=[]; withMed.forEach(c=>c.nd.members.slice().sort((a,b)=>a-b).forEach(i=>order.push(i)));
+  const nLeaf=order.length, maxLabel=Math.max(...labels.map(l=>l.length));
+  const W=380,padL=26,padR=Math.max(70,maxLabel*7+26),padT=20,padB=16;
+  const H=Math.max(150,nLeaf*24+padT+padB), dx=(W-padL-padR)/2;
+  const yOf={}; order.forEach((iso,i)=> yOf[iso]=padT+(i+0.5)*((H-padT-padB)/nLeaf));
+  const pal=['#1e5a96','#288c5a','#e19628','#be3737','#784696','#0f8a8a'];
+  const rootY=order.reduce((s,i)=>s+yOf[i],0)/nLeaf;
+  let svg='';
+  withMed.forEach((c,k)=>{
+    const col=pal[k%pal.length], ms=c.nd.members.slice().sort((a,b)=>a-b);
+    const cx=padL+dx, cy=ms.reduce((s,i)=>s+yOf[i],0)/ms.length;
+    svg+=`<line x1="${padL}" y1="${rootY}" x2="${cx}" y2="${cy}" stroke="${split?col:'#9aa7b4'}" stroke-width="${split?2:1.4}"/>`;
+    const lx=(padL+cx)/2, ly=(rootY+cy)/2;
+    if(split){ svg+=`<rect x="${lx-11}" y="${ly-9}" width="22" height="12" rx="2" fill="#fff" opacity="0.85"/>`;
+      svg+=`<text x="${lx}" y="${ly}" font-size="10" font-weight="bold" fill="#be3737" text-anchor="middle">${Math.round(c.cut*10)/10}</text>`; }
+    else { svg+=`<rect x="${lx-9}" y="${ly-9}" width="18" height="12" rx="2" fill="#fff" opacity="0.7"/>`;
+      svg+=`<text x="${lx}" y="${ly}" font-size="8" fill="#9aa7b4" text-anchor="middle">≤t</text>`; }
+    ms.forEach(i=>{ const iy=yOf[i], ix=padL+2*dx, isMed=i===c.med;
+      svg+=`<line x1="${cx}" y1="${cy}" x2="${ix}" y2="${iy}" stroke="${col}" stroke-width="1.4"/>`;
+      svg+=`<circle cx="${ix}" cy="${iy}" r="3" fill="${col}"/>`;
+      svg+=`<text x="${ix+6}" y="${iy+4}" font-size="10" fill="${col}" ${isMed?'font-weight="bold"':''}>${labels[i]}${isMed?' ★':''}</text>`; });
+    svg+=`<circle cx="${cx}" cy="${cy}" r="10" fill="#fff" stroke="${col}" stroke-width="2"/>`;
+    svg+=`<text x="${cx}" y="${cy+4}" font-size="11" fill="${col}" text-anchor="middle">${k+1}</text>`;
+  });
+  svg+=`<circle cx="${padL}" cy="${rootY}" r="11" fill="#fff" stroke="#5a6b7d" stroke-width="2"/>`;
+  svg+=`<text x="${padL}" y="${rootY+4}" font-size="11" fill="#5a6b7d" text-anchor="middle">R</text>`;
+  svg+=`<text x="${padL+2*dx+6}" y="13" font-size="9" fill="#9aa7b4">★ = medoid</text>`;
+  const el=document.getElementById('split-tree'); el.setAttribute('viewBox',`0 0 ${W} ${H}`); el.setAttribute('height',H); el.innerHTML=svg;
+}
+
+/* ============================================================
+   TAB 3 — INVARIANCE
+   ============================================================ */
+let ivN, ivPrevCodes, ivRef, ivBackCodes, ivMedoids;
+function ivDist(i,j){const a=IV_PTS[IV_ORDER[i]],b=IV_PTS[IV_ORDER[j]];return Math.round(Math.hypot(a[0]-b[0],a[1]-b[1]));}
+function ivMatrix(N){const D=[];for(let i=0;i<N;i++){D.push([]);for(let j=0;j<N;j++)D[i].push(ivDist(i,j));}return D;}
+// codes for the current set, per mode
+function ivCodes(){
+  const mode=document.getElementById('inv-mode').value;
+  if(mode==='recompute'){
+    const D=ivMatrix(ivN), meta=makeMeta(IV_ORDER.slice(0,ivN));
+    const codes=assignCodes(upgma(D,'single'),IV_THR,D,meta);
+    return IV_ORDER.slice(0,ivN).map((l,i)=>fmtCode(codes[i]));
+  }
+  // frozen: backbone codes fixed, arrivals classified against frozen refs
+  return IV_ORDER.slice(0,ivN).map((l,i)=>{
+    if(i<IV_NB) return fmtCode(ivBackCodes[i]);
+    const dnew=[]; for(let j=0;j<IV_NB;j++) dnew.push(ivDist(i,j));
+    return fmtCode(classifyNew(ivRef,IV_THR,dnew).path);
+  });
+}
+function buildInvBackbone(){
+  const D=ivMatrix(IV_NB), meta=makeMeta(IV_ORDER.slice(0,IV_NB)), root=upgma(D,'single');
+  ivRef=buildRefTree(root,IV_THR,D,meta);
+  const codes=assignCodes(root,IV_THR,D,meta);
+  ivBackCodes={}; for(let i=0;i<IV_NB;i++) ivBackCodes[i]=codes[i];
+  ivMedoids=new Set(); (function col(node){ if(!node.children) return; node.children.forEach(ch=>{ ivMedoids.add(ch.medoid); col(ch.sub); }); })(ivRef);
+}
+function resetInv(){
+  ivN=IV_NB; ivPrevCodes=null; IV_THR=[10,4,2];
+  buildInvBackbone();
+  document.getElementById('inv-finer').textContent='＋ add finer level (t=0)';
+  const mode=document.getElementById('inv-mode').value;
+  document.getElementById('inv-h3').textContent= mode==='frozen'?'Frozen backbone':'Recomputed each time';
+  document.getElementById('inv-explain').className='note';
+  document.getElementById('inv-explain').innerHTML=
+    (mode==='frozen'
+      ? 'Backbone frozen: groups X (x1,x2) and Y (y1,y2). New isolates are classified against the fixed references. '
+      : 'No frozen backbone: the whole tree is rebuilt from scratch every time an isolate arrives. ')+
+    'Press “A new isolate arrives”.';
+  renderInv();
+}
+function renderInv(){
+  const codes=ivCodes();
+  const tbl=document.getElementById('inv-codes');
+  let h='<tr><th>Isolate</th><th>LIN code</th><th>status</th></tr>';
+  codes.forEach((c,i)=>{
+    const ch = ivPrevCodes && ivPrevCodes[i]!==undefined && ivPrevCodes[i]!==c;
+    const isNew = ivPrevCodes && i>=ivPrevCodes.length;
+    h+=`<tr><td>${IV_ORDER[i]}</td><td class="lincode ${ch?'changed':''}">${c}</td>`+
+       `<td>${isNew?'<span class="pill new">new</span>':ch?'<span class="changed">changed</span>':'<span class="ok">unchanged</span>'}</td></tr>`;
+  });
+  tbl.innerHTML=h;
+  document.getElementById('inv-status').innerHTML=
+    `Isolates: <b>${ivN}</b> · thresholds [${IV_THR.join(', ')}] · mode: <b>${document.getElementById('inv-mode').value}</b>`;
+  // the name tree, with change / new markers
+  const mark={};
+  codes.forEach((c,i)=>{ if(ivPrevCodes && i>=ivPrevCodes.length) mark[i]='new';
+    else if(ivPrevCodes && ivPrevCodes[i]!==undefined && ivPrevCodes[i]!==c) mark[i]='changed'; });
+  const isFrozen=document.getElementById('inv-mode').value==='frozen';
+  drawCodeTrie(IV_ORDER.slice(0,ivN), codes, 'inv-tree', {mark, star:isFrozen?ivMedoids:undefined, thresholds:IV_THR});
+  // distance matrix so the distances behind the behaviour are visible
+  const t1=IV_THR[0], tf=IV_THR[IV_THR.length-1];
+  let dh='<table class="dist"><tr><th></th>';
+  for(let j=0;j<ivN;j++) dh+=`<th>${IV_ORDER[j]}</th>`; dh+='</tr>';
+  for(let i=0;i<ivN;i++){ dh+=`<tr><th>${IV_ORDER[i]}</th>`;
+    for(let j=0;j<ivN;j++){ if(i===j){dh+='<td>–</td>';continue;}
+      const d=ivDist(i,j), cl=d>t1?'far':(d<=tf?'near':'');
+      dh+=`<td class="${cl}">${d}</td>`; }
+    dh+='</tr>'; }
+  dh+='</table>';
+  document.getElementById('inv-dist').innerHTML=dh;
+}
+document.getElementById('inv-add').onclick=()=>{
+  if(ivN>=IV_ORDER.length){ document.getElementById('inv-explain').innerHTML='All isolates have arrived — press Reset.'; return; }
+  const before=ivCodes(); ivPrevCodes=before;   // snapshot before adding
+  ivN++;
+  const after=ivCodes();
+  const changed=before.filter((c,i)=>c!==after[i]).length;
+  renderInv();
+  const arrival=IV_ORDER[ivN-1];
+  document.getElementById('inv-explain').className='note';
+  document.getElementById('inv-explain').innerHTML=
+    (IV_NOTE[arrival]||'')+
+    `<br><br><b class="${changed?'changed':'ok'}">${changed} existing code(s) changed</b> on this step `+
+    `(mode: <b>${document.getElementById('inv-mode').value}</b>).`;
+};
+document.getElementById('inv-finer').onclick=()=>{
+  if(IV_THR.length<=3) IV_THR=[10,4,2,0]; else IV_THR=[10,4,2];
+  buildInvBackbone(); ivPrevCodes=null; renderInv();
+  const on=IV_THR.length>3;
+  document.getElementById('inv-finer').textContent= on?'− remove finer level':'＋ add finer level (t=0)';
+  document.getElementById('inv-explain').className='note';
+  document.getElementById('inv-explain').innerHTML= on
+    ? 'Added a 4th, finest level (<b>t4=0</b>, exact match) → codes are now <b>4 digits</b>. <b>twin</b> is no longer merged '+
+      'with x1/x2: it goes from <code>1.1.1</code> to <code>1.1.1.x</code> (leading <code>1.1.1</code> prefix stays shared). '+
+      'Adding a level = a <b>new backbone version</b> → <b>every</b> code gains a digit (deliberate, versioned). '+
+      'Heads-up: two independent new arrivals can grab the <b>same provisional digit</b> — each is classified against the '+
+      'frozen {x1,x2} backbone, blind to the other. That is exactly why brand-new branches are <b>provisional</b> until the next version folds them in.'
+    : 'Back to 3 levels.';
+};
+
+/* ============================================================
+   TAB 4 — CONSTELLATION / REASSORTMENT
+   ============================================================ */
+// BTV-like: 5 isolates, 10 segments. Two background lineages (region ~ (0,0) vs (30,0)).
+// X,Y,Z,V are lineage-1 on most segments; W is lineage-2. Z's segment 10 is reassorted into lineage-2.
+const BTV_ISO=['X','Y','Z','W','V'];
+const NSEG=10;
+function btvSegCoords(seg){
+  // clean lineages so the ONLY reassortant is Z on segment 10:
+  // X,Y,Z,V cluster tightly in lineage 1 (~origin); W sits alone in lineage 2 (far).
+  const pts=[[0,0],[1,0],[0,1],[20,0],[1,1]];   // X, Y, Z, W, V  (lineage 2 ~19 SNP away)
+  if(seg===10) pts[2]=[20,1];                    // Z reassorts segment 10 into lineage 2 (next to W)
+  return pts;
+}
+function renderConst(){
+  const t1=+document.getElementById('const-t').value;
+  document.getElementById('const-tval').textContent=t1;
+  const thr=[t1,6,3];
+  // per-segment code for every isolate
+  const segCodes=[]; // segCodes[seg][isoIdx] = code array
+  for(let s=1;s<=NSEG;s++){
+    const D=distFromCoords(btvSegCoords(s));
+    const meta=makeMeta(BTV_ISO);
+    const codes=assignCodes(upgma(D),thr,D,meta);
+    segCodes.push(BTV_ISO.map((_,i)=>codes[i]));
+  }
+  // for each isolate, find its modal top-level digit across segments -> flag outliers
+  const isoTop=BTV_ISO.map((_,i)=>{
+    const counts={};
+    for(let s=0;s<NSEG;s++){ const d=segCodes[s][i][0]; counts[d]=(counts[d]||0)+1; }
+    let mode=null,mc=-1; for(const k in counts) if(counts[k]>mc){mc=counts[k];mode=+k;}
+    return mode;
+  });
+  // table
+  let h='<table class="dist"><tr><th>isolate</th>';
+  for(let s=1;s<=NSEG;s++) h+=`<th>seg ${s}</th>`;
+  h+='<th>constellation</th></tr>';
+  let nReassort=0;
+  BTV_ISO.forEach((iso,i)=>{
+    h+=`<tr><th>${iso}</th>`;
+    const cells=[];
+    for(let s=0;s<NSEG;s++){
+      const code=fmtCode(segCodes[s][i]);
+      const outlier=segCodes[s][i][0]!==isoTop[i];
+      if(outlier) nReassort++;
+      cells.push(outlier?`<span class="seg-re">${code}</span>`:`<span class="seg-ok">${code}</span>`);
+      h+=`<td>${cells[cells.length-1]}</td>`;
+    }
+    h+=`<td class="mono" style="font-size:12px">[ ${cells.join(' | ')} ]</td></tr>`;
+  });
+  h+='</table>';
+  document.getElementById('const-table').innerHTML=h;
+  // one small name-tree per segment; the reassortant (outlier) leaf is flagged
+  let th='';
+  for(let s=0;s<NSEG;s++) th+=`<div style="width:160px"><div style="font-size:12px;color:var(--gray);text-align:center">seg ${s+1}</div><svg id="seg-tree-${s}" width="160" height="120" viewBox="0 0 160 120"></svg></div>`;
+  document.getElementById('const-trees').innerHTML=th;
+  for(let s=0;s<NSEG;s++){
+    const mark={}; BTV_ISO.forEach((_,i)=>{ if(segCodes[s][i][0]!==isoTop[i]) mark[i]='changed'; });
+    drawCodeTrie(BTV_ISO, segCodes[s].map(c=>fmtCode(c)), 'seg-tree-'+s, {mark});
+  }
+  document.getElementById('const-note').innerHTML= nReassort>0
+    ? `<b>${nReassort} reassorted segment(s)</b> detected: a segment whose lineage disagrees with the rest of its
+       genome. Here isolate <b>Z</b> shares lineages with X/Y on most segments but its <b>segment 10</b> sits in a
+       distant clade — exactly the BTV reassortment case from the slides, and the name shows it.`
+    : `No reassortment at this threshold — every segment of every isolate agrees with its genome-wide lineage.
+       Lower t1 to resolve finer structure.`;
+}
+
+/* ============================================================
+   TAB 5 — PASTEUR (authority) vs INVARIANT (LIN)
+   ============================================================ */
+const PV_PTS={a1:[0,0],a2:[1,1],a3:[0,2],b1:[12,0],b2:[13,1],b3:[12,2],a4:[1,3],c1:[0,25],m:[6,1]};
+const PV_ORDER=['a1','a2','a3','b1','b2','b3','a4','c1','m'];
+const PV_NB=6;            // frozen backbone = first 6
+const PV_T=7;             // single-linkage threshold for the authority model
+const PV_THR=[9,4,2];     // LIN thresholds (A vs B separate at 9)
+const PV_NOTE={
+  a4:'<b>a4</b> arrives, close to group A. Easy case: both models absorb it without disruption.',
+  c1:'<b>c1</b> arrives, far from everything. A new group in both: a new serial/type on the left, a new top-level digit on the right.',
+  m :'<b>m</b> arrives, a <b>“bridging”</b> sample between A and B. On the left single-linkage <b>merges A and B</b>: '+
+     'every isolate of B gets <b>relabelled</b>, and because a cluster disappeared <b>c1 is renumbered</b> too. '+
+     'On the right m is simply assigned to the <b>nearest frozen reference</b>: A, B and c1 <b>keep their names</b>.'
+};
+let pvN, pvPrevType, pvPrevCode, pvRef, pvBackCodes, pvMedoids;
+function pvDist(i,j){const a=PV_PTS[PV_ORDER[i]],b=PV_PTS[PV_ORDER[j]];return Math.round(Math.hypot(a[0]-b[0],a[1]-b[1]));}
+function pvComponents(N){           // single-linkage components, numbered by smallest serial
+  const par=Array.from({length:N},(_,i)=>i);
+  const find=x=>{while(par[x]!==x){par[x]=par[par[x]];x=par[x];}return x;};
+  for(let i=0;i<N;i++)for(let j=i+1;j<N;j++) if(pvDist(i,j)<=PV_T) par[find(i)]=find(j);
+  const g={}; for(let i=0;i<N;i++){const r=find(i);(g[r]=g[r]||[]).push(i);}
+  const comps=Object.values(g).sort((a,b)=>Math.min(...a)-Math.min(...b));
+  const type={}; comps.forEach((c,k)=>c.forEach(i=>type[i]=k+1)); return type;
+}
+function pvLinCode(i){
+  if(i<PV_NB) return pvBackCodes[i];
+  const dnew=[]; for(let j=0;j<PV_NB;j++) dnew.push(pvDist(i,j));
+  return classifyNew(pvRef,PV_THR,dnew).path;
+}
+function resetPV(){
+  pvN=PV_NB; pvPrevType=null; pvPrevCode=null;
+  const D=[]; for(let i=0;i<PV_NB;i++){D.push([]); for(let j=0;j<PV_NB;j++) D[i].push(pvDist(i,j));}
+  const meta=makeMeta(PV_ORDER.slice(0,PV_NB)), root=upgma(D,'single');
+  pvRef=buildRefTree(root,PV_THR,D,meta);
+  const codes=assignCodes(root,PV_THR,D,meta);
+  pvBackCodes={}; for(let i=0;i<PV_NB;i++) pvBackCodes[i]=codes[i];
+  pvMedoids=new Set(); (function col(node){ if(!node.children) return; node.children.forEach(ch=>{ pvMedoids.add(ch.medoid); col(ch.sub); }); })(pvRef);
+  document.getElementById('pv-explain').innerHTML=
+    'Initial frozen backbone: 3 isolates in group <b>A</b>, 3 in group <b>B</b>, well separated. '+
+    'Now press “A new isolate arrives”.';
+  renderPV();
+}
+function renderPV(){
+  const type=pvComponents(pvN);
+  // authority table
+  let hp='<table class="dist"><tr><th>isolate</th><th>name = serial #</th><th>type (flat · 1 level)</th></tr>';
+  let pc=0;
+  for(let i=0;i<pvN;i++){
+    const ch=pvPrevType && pvPrevType[i]!==undefined && pvPrevType[i]!==type[i]; if(ch)pc++;
+    hp+=`<tr><td>${PV_ORDER[i]}</td><td>#${i+1}</td><td class="${ch?'changed':''}">Type ${type[i]}${ch?' ⟵ was '+pvPrevType[i]:''}</td></tr>`;
+  }
+  hp+='</table>';
+  document.getElementById('pv-pasteur').innerHTML=hp;
+  // invariant table
+  let hl=`<table class="dist"><tr><th>isolate</th><th>name = LIN code (${PV_THR.length} levels · t=${PV_THR.join(',')})</th></tr>`; let lc=0;
+  for(let i=0;i<pvN;i++){
+    const code=fmtCode(pvLinCode(i));
+    const ch=pvPrevCode && pvPrevCode[i]!==undefined && pvPrevCode[i]!==code; if(ch)lc++;
+    hl+=`<tr><td>${PV_ORDER[i]}</td><td class="lincode ${ch?'changed':''}">${code}</td></tr>`;
+  }
+  hl+='</table>';
+  document.getElementById('pv-lin').innerHTML=hl;
+  // counters (only after the first arrival)
+  if(pvPrevType){
+    const last=pvN-1; let nm=-1,nd=Infinity;
+    pvMedoids.forEach(mi=>{ const d=pvDist(last,mi); if(d<nd){nd=d;nm=mi;} });
+    document.getElementById('pv-explain').innerHTML=
+      (PV_NOTE[PV_ORDER[last]]||'')+
+      `<br><br><b style="color:var(--green)">Why the medoid:</b> ${PV_ORDER[last]} is measured against the frozen ★ references; `+
+      `nearest is <b>${PV_ORDER[nm]}</b> (dist ${nd}) → it attaches there. No re-clustering → the others keep their names. `+
+      `Pasteur has no fixed reference, so it re-clusters and a bridge merges groups.`+
+      `<br><br><b style="color:var(--red)">Pasteur: ${pc} names/types changed</b> &nbsp;·&nbsp; `+
+      `<b style="color:var(--green)">Invariant: ${lc} changed</b>.`;
+  }
+  // two trees: authority "type tree" (flat) vs invariant "name tree", with change markers
+  const labs=PV_ORDER.slice(0,pvN), authCodes=[], linCodes=[], authMark={}, linMark={};
+  for(let i=0;i<pvN;i++){
+    authCodes.push(String(type[i])); linCodes.push(fmtCode(pvLinCode(i)));
+    if(pvPrevType){ if(pvPrevType[i]===undefined) authMark[i]='new';
+      else if(pvPrevType[i]!==type[i]) authMark[i]='changed'; }
+    if(pvPrevCode){ if(pvPrevCode[i]===undefined) linMark[i]='new';
+      else if(pvPrevCode[i]!==linCodes[i]) linMark[i]='changed'; }
+  }
+  drawCodeTrie(labs, authCodes, 'pv-pasteur-tree', {mark:authMark, thresholds:[PV_T]});
+  drawCodeTrie(labs, linCodes, 'pv-lin-tree', {mark:linMark, star:pvMedoids, thresholds:PV_THR});
+  // shared distance matrix, coloured by the single-linkage threshold PV_T
+  let dh='<table class="dist"><tr><th></th>';
+  for(let j=0;j<pvN;j++) dh+=`<th>${PV_ORDER[j]}</th>`; dh+='</tr>';
+  for(let i=0;i<pvN;i++){ dh+=`<tr><th>${PV_ORDER[i]}</th>`;
+    for(let j=0;j<pvN;j++){ if(i===j){dh+='<td>–</td>';continue;}
+      const d=pvDist(i,j), cl=d<=PV_T?'near':'far';
+      dh+=`<td class="${cl}">${d}</td>`; }
+    dh+='</tr>'; }
+  dh+='</table>';
+  document.getElementById('pv-dist').innerHTML=dh;
+  pvPrevType={}; pvPrevCode={};
+  for(let i=0;i<pvN;i++){ pvPrevType[i]=type[i]; pvPrevCode[i]=fmtCode(pvLinCode(i)); }
+  document.getElementById('pv-step').textContent=`Isolates present: ${pvN} / ${PV_ORDER.length}`;
+}
+document.getElementById('pv-add').onclick=()=>{
+  if(pvN>=PV_ORDER.length){ document.getElementById('pv-explain').innerHTML='All samples have arrived — press Reset.'; return; }
+  pvN++; renderPV();
+};
+
+/* ============================================================
+   TABS
+   ============================================================ */
+document.querySelectorAll('#tabs button').forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll('#tabs button').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    document.getElementById('tab-'+b.dataset.tab).classList.add('active');
+  };
+});
+
+// flip the banner green: if you can read THIS state, JS is running
+(function(){
+  const f=document.getElementById('jsflag');
+  f.style.background='#288c5a';
+  f.innerHTML='✓ JavaScript is running — drag the sliders and the codes / cut lines update on their own (no button needed).';
+})();
+
+// init
+resetTree();
+renderSplit();
+resetInv();
+renderConst();
+resetPV();
+</script>
+</body>
+</html>
