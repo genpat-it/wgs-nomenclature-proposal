@@ -685,7 +685,7 @@ function drawDendro(root,labels,codes,thr){
 // ---- alternative view: the LIN tree (nodes = clusters labelled by their code), like the slides ----
 function drawLINTree(root,thresholds,D,meta,labels,codes){
   function build(node,level,prefix,cut){
-    if(level>=thresholds.length) return {code:prefix,leaf:true,cut,isolates:node.members.slice().sort((a,b)=>a-b)};
+    if(level>=thresholds.length) return {code:prefix,leaf:true,cut,medoid:medoid(node.members,D,meta),isolates:node.members.slice().sort((a,b)=>a-b)};
     const cls=clustersAtH(node,thresholds[level]);
     const split=cls.length>1;   // only label the edge when a real separation happened here
     const wm=cls.map(c=>({c:c.nd,cut:split?c.cut:null,med:medoid(c.nd.members,D,meta)})).sort((a,b)=>metaCmp(meta,clusterRank(a.c.members,meta),clusterRank(b.c.members,meta)));
@@ -717,10 +717,10 @@ function drawLINTree(root,thresholds,D,meta,labels,codes){
     n._y=ms.reduce((s,i)=>s+yOfIso[i],0)/ms.length;
     if(n.leaf){
       const ix=padL+maxDepth*dx;
-      n.isolates.forEach(iso=>{ const iy=yOfIso[iso];
+      n.isolates.forEach(iso=>{ const iy=yOfIso[iso], isMed=iso===n.medoid;
         svg+=`<line x1="${n._x}" y1="${n._y}" x2="${ix}" y2="${iy}" stroke="${cIso(iso)}" stroke-width="1.5"/>`;
-        svg+=`<circle cx="${ix}" cy="${iy}" r="3.5" fill="${cIso(iso)}"/>`;
-        svg+=`<text x="${ix+7}" y="${iy+4}" font-size="11" fill="#1c2530">${labels[iso]}</text>`;
+        svg+=`<circle cx="${ix}" cy="${iy}" r="${isMed?4.5:3.5}" fill="${cIso(iso)}"/>`;
+        svg+=`<text x="${ix+7}" y="${iy+4}" font-size="11" fill="#1c2530" ${isMed?'font-weight="bold"':''}>${labels[iso]}${isMed?' ★':''}</text>`;
         svg+=`<text x="${ix+9+maxLabel*7}" y="${iy+4}" font-size="10" fill="${cIso(iso)}">${codes[iso].join('.')}</text>`;
       });
     } else n.children.forEach(ch=>{ place(ch);
