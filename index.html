@@ -145,6 +145,10 @@
           digits — they never renumber the prefixes above them. That is invariance "by construction" (see tab 3).</div>
       </div>
     </div>
+    <h3>Samples per code — from a code to the exact isolates (★ = medoid reference)</h3>
+    <p class="sub">A code names a <b>group</b>: this is the inverse lookup — given a code, which exact samples carry it,
+       and which real isolate is its reference (the medoid ★). The sample identity is never lost; the code sits next to it.</p>
+    <div id="tree-groups" style="overflow:auto;max-height:260px;margin-bottom:14px"></div>
     <h3>Distance distribution + thresholds</h3>
     <p class="sub">Each threshold should fall in a <b>“gap”</b> (few or no distances), not inside a pile of bars.
        Threshold in a gap = clean cut between real groups; threshold inside the bars = forcing (splits a real cluster).</p>
@@ -594,6 +598,17 @@ function renderTree(){
   let h='<tr><th>Isolate</th><th>LIN code</th></tr>';
   labels.forEach((l,i)=>{ h+=`<tr><td>${l}</td><td class="lincode">${fmtCode(codes[i])}</td></tr>`; });
   tbl.innerHTML=h;
+  // inverse lookup: code -> exact samples (+ medoid reference ★)
+  const groups={};
+  labels.forEach((l,i)=>{ const c=fmtCode(codes[i]); (groups[c]=groups[c]||[]).push(i); });
+  const codeSort=(a,b)=>{const A=a.split('.').map(Number),B=b.split('.').map(Number);
+    for(let k=0;k<Math.max(A.length,B.length);k++){const d=(A[k]||0)-(B[k]||0); if(d) return d;} return 0;};
+  let gh='<table class="codetbl"><tr><th>code</th><th>samples (★ = medoid reference)</th><th>n</th></tr>';
+  Object.keys(groups).sort(codeSort).forEach(c=>{ const mem=groups[c], med=medoid(mem,D,meta);
+    const names=mem.map(i=> i===med?`<b style="color:var(--blue)">${labels[i]} ★</b>`:labels[i]).join(', ');
+    gh+=`<tr><td class="lincode">${c}</td><td>${names}</td><td>${mem.length}</td></tr>`; });
+  gh+='</table>';
+  document.getElementById('tree-groups').innerHTML=gh;
 }
 
 function drawDendro(root,labels,codes,thr){
