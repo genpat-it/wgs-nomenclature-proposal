@@ -6,7 +6,7 @@
 An interactive, single-file web playground that demonstrates how a **pathogen-agnostic, hierarchical,
 threshold-based** nomenclature would work — the same family as LIN / LINcodes, SnapperDB SNP-addresses and HierCC.
 
-**Live demo:** see the GitHub Pages URL of this repository.
+**▶ Live playground:** https://genpat-it.github.io/wgs-nomenclature-proposal/
 
 ## What it shows
 
@@ -18,19 +18,15 @@ threshold-based** nomenclature would work — the same family as LIN / LINcodes,
    (within-threshold novelty, resolution cap), with the distance matrix that explains each case.
 4. **Constellation / Reassortment** — segmented genomes (BTV): one code per segment; a reassorted
    segment shows up as an outlier digit.
-5. **Pasteur vs Invariant** — side-by-side: an authority/serial model reshuffles as data arrive,
-   the invariant model does not.
+5. **Central registry vs Invariant** — side-by-side: a central-registry/serial model reshuffles as data
+   arrive, the invariant model does not.
 
 ## Key idea
 
 The name is a **path down a tree**: shared prefix = shared ancestry. New data only **append** digits;
 old names never change (invariance). Everyone recomputes the same code from a **public, versioned backbone
-+ thresholds** (decentralised). Distances are an **input** (e.g. from cgDist) — this tool is only the naming layer.
++ thresholds** (decentralised). Distances are an **input** — this tool is only the naming layer.
 
 ## Run locally
 
 It is a single static file — just open `index.html` in a browser (Chrome / Firefox). No server, no build.
-
-## Authors
-
-A. de Ruvo, A. Di Pasquale, Bucciacchio — Istituto Zooprofilattico Sperimentale dell'Abruzzo e Molise "G. Caporale" (IZSAM).
