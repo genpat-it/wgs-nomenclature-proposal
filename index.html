@@ -742,6 +742,10 @@ function drawLINTree(root,thresholds,D,meta,labels,codes){
     const col=cSet(n._ms), sc=col==='#9aa7b4'?'#5a6b7d':col, isRoot=n.code.length===0;
     svg+=`<circle cx="${n._x}" cy="${n._y}" r="${isRoot?11:10}" fill="#fff" stroke="${sc}" stroke-width="2"/>`;
     svg+=`<text x="${n._x}" y="${n._y+4}" font-size="11" text-anchor="middle" fill="${sc}">${isRoot?'R':n.code[n.code.length-1]}</text>`;
+    // medoid (reference strain) of this internal cluster node — shows e.g. the lineage's centre
+    if(!isRoot && !n.leaf){ const md=medoid(n._ms,D,meta);
+      svg+=`<text x="${n._x}" y="${n._y+20}" font-size="8" text-anchor="middle" fill="${sc}">★${labels[md]}</text>`;
+    }
     if(!n.leaf) n.children.forEach(nodes);
   })(tree);
   svg+=`<text x="${padL}" y="14" font-size="9" fill="#9aa7b4" text-anchor="middle">root</text>`;
