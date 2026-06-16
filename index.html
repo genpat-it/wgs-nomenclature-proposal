@@ -131,6 +131,13 @@
           <option value="complete">complete (diametro ≤ t)</option>
         </select>
       </div>
+      <div class="ctl">
+        <label>Code style</label>
+        <select id="tree-codestyle" onchange="renderTree()" style="padding:6px;border-radius:6px;min-width:180px">
+          <option value="num" selected>numbers (1.1.1)</option>
+          <option value="ref">reference strains (medoid per level)</option>
+        </select>
+      </div>
     </div>
     <div class="controls" id="tree-ctls"></div>
     <div id="tree-live" style="font-size:13px;color:var(--blue);font-weight:600;margin:2px 0 8px"></div>
@@ -452,6 +459,16 @@ function distFromCoords(pts){
   return D;
 }
 function fmtCode(arr){ return arr.join('.'); }
+// reference-strain code: replace each level's digit with the medoid (a real strain) of that node
+function refCodeOf(i,codesArr,D,meta,labels){
+  const parts=codesArr[i], out=[];
+  for(let k=1;k<=parts.length;k++){
+    const pre=parts.slice(0,k).join('.'), mem=[];
+    for(let j=0;j<codesArr.length;j++) if(codesArr[j].slice(0,k).join('.')===pre) mem.push(j);
+    out.push(labels[medoid(mem,D,meta)]);
+  }
+  return out.join('.');
+}
 
 /* ============================================================
    DEMO DATA
@@ -582,6 +599,8 @@ function renderTree(){
   const D=curTreeD, labels=curTreeLabels, meta=makeMeta(labels);
   const root=upgma(D, document.getElementById('tree-linkage').value);
   const codes=assignCodes(root,treeThresholds,D,meta);
+  const codeStyle=document.getElementById('tree-codestyle').value;
+  const disp=curTreeLabels.map((l,i)=> codeStyle==='ref'? refCodeOf(i,codes,D,meta,curTreeLabels) : fmtCode(codes[i]));
   const view=document.getElementById('tree-view').value;
   if(view==='lintree')   drawLINTree(root,treeThresholds,D,meta,labels,codes);
   else if(view==='mst')  drawMST(D,labels,treeThresholds);
@@ -596,7 +615,7 @@ function renderTree(){
   // code table
   const tbl=document.getElementById('tree-codes');
   let h='<tr><th>Isolate</th><th>LIN code</th></tr>';
-  labels.forEach((l,i)=>{ h+=`<tr><td>${l}</td><td class="lincode">${fmtCode(codes[i])}</td></tr>`; });
+  labels.forEach((l,i)=>{ h+=`<tr><td>${l}</td><td class="lincode">${disp[i]}</td></tr>`; });
   tbl.innerHTML=h;
   // inverse lookup: code -> exact samples (+ medoid reference ★)
   const groups={};
@@ -606,7 +625,7 @@ function renderTree(){
   let gh='<table class="codetbl"><tr><th>code</th><th>samples (★ = medoid reference)</th><th>n</th></tr>';
   Object.keys(groups).sort(codeSort).forEach(c=>{ const mem=groups[c], med=medoid(mem,D,meta);
     const names=mem.map(i=> i===med?`<b style="color:var(--blue)">${labels[i]} ★</b>`:labels[i]).join(', ');
-    gh+=`<tr><td class="lincode">${c}</td><td>${names}</td><td>${mem.length}</td></tr>`; });
+    gh+=`<tr><td class="lincode">${disp[mem[0]]}</td><td>${names}</td><td>${mem.length}</td></tr>`; });
   gh+='</table>';
   document.getElementById('tree-groups').innerHTML=gh;
 }
