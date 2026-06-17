@@ -721,7 +721,7 @@ function drawLINTree(root,thresholds,D,meta,labels,codes){
         svg+=`<line x1="${n._x}" y1="${n._y}" x2="${ix}" y2="${iy}" stroke="${cIso(iso)}" stroke-width="1.5"/>`;
         svg+=`<circle cx="${ix}" cy="${iy}" r="${isMed?4.5:3.5}" fill="${cIso(iso)}"/>`;
         svg+=`<text x="${ix+7}" y="${iy+4}" font-size="11" fill="#1c2530" ${isMed?'font-weight="bold"':''}>${labels[iso]}${isMed?' ★':''}</text>`;
-        svg+=`<text x="${ix+9+maxLabel*7}" y="${iy+4}" font-size="10" fill="${cIso(iso)}">${codes[iso].join('.')}</text>`;
+        svg+=`<text x="${ix+9+(maxLabel+2)*7}" y="${iy+4}" font-size="10" fill="${cIso(iso)}">${codes[iso].join('.')}</text>`;
       });
     } else n.children.forEach(ch=>{ place(ch);
       const col=cSet(ch._ms);
