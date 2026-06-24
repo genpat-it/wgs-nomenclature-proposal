@@ -135,6 +135,7 @@
         <label>Code style</label>
         <select id="tree-codestyle" onchange="renderTree()" style="padding:6px;border-radius:6px;min-width:180px">
           <option value="num" selected>numbers (1.1.1)</option>
+          <option value="combo">numbers + reference (s3-1.s1-1)</option>
           <option value="ref">reference strains (medoid per level)</option>
         </select>
       </div>
@@ -469,6 +470,16 @@ function refCodeOf(i,codesArr,D,meta,labels){
   }
   return out.join('.');
 }
+// combined code: each level = <medoid reference>-<digit>, e.g. s3-1.s1-1.s1-1 (keeps the numeric semantics + the real strain)
+function comboCodeOf(i,codesArr,D,meta,labels){
+  const parts=codesArr[i], out=[];
+  for(let k=1;k<=parts.length;k++){
+    const pre=parts.slice(0,k).join('.'), mem=[];
+    for(let j=0;j<labels.length;j++) if(codesArr[j].slice(0,k).join('.')===pre) mem.push(j);
+    out.push(labels[medoid(mem,D,meta)]+'-'+parts[k-1]);
+  }
+  return out.join('.');
+}
 
 /* ============================================================
    DEMO DATA
@@ -600,7 +611,10 @@ function renderTree(){
   const root=upgma(D, document.getElementById('tree-linkage').value);
   const codes=assignCodes(root,treeThresholds,D,meta);
   const codeStyle=document.getElementById('tree-codestyle').value;
-  const disp=curTreeLabels.map((l,i)=> codeStyle==='ref'? refCodeOf(i,codes,D,meta,curTreeLabels) : fmtCode(codes[i]));
+  const disp=curTreeLabels.map((l,i)=>
+    codeStyle==='ref'   ? refCodeOf(i,codes,D,meta,curTreeLabels) :
+    codeStyle==='combo' ? comboCodeOf(i,codes,D,meta,curTreeLabels) :
+                          fmtCode(codes[i]));
   const view=document.getElementById('tree-view').value;
   if(view==='lintree')   drawLINTree(root,treeThresholds,D,meta,labels,codes);
   else if(view==='mst')  drawMST(D,labels,treeThresholds);
