@@ -411,6 +411,19 @@
     <p class="sub">Likelihood: <b>high early</b> (sparse backbone → gaps), then <b>rare</b> as sampling matures — exactly
        Pango's history. Mitigate: first backbone on a <b>broad, representative</b> set; robust linkage/thresholds;
        when re-structuring is needed, <b>version with old→new aliases</b> to keep invariance.</p>
+
+    <h3>Versioning &amp; aliases — the invariance you can keep</h3>
+    <p class="sub">Invariance isn't "never changes" — it's "changes <b>only at explicit versions</b>, and every change is a
+       <b>published old→new map</b>", so old names always translate. Two kinds of change:</p>
+    <ul style="font-size:14px">
+      <li><b style="color:var(--green)">Append</b> (new tips / a finer level): the old code is a <b>prefix</b> of the new one —
+          <code>1.1.1</code> → <code>1.1.1.1</code>, <code>1.1.1.2</code>. Backward-compatible, <b>no alias needed</b>.</li>
+      <li><b style="color:var(--red)">Re-structure</b> (merge / re-root): needs an <b>alias map</b>. E.g. a bridge shows
+          lineage <code>2</code> is a sub-branch of <code>1</code> → alias <code>2 → 1.3</code>, so
+          <code>2.1.1</code> (v1.0) = <code>1.3.1.1</code> (v1.1). Whoever holds <code>2.1.1</code> looks it up → still valid, translated.</li>
+    </ul>
+    <p class="sub">Bonus (same as Pango): aliases also shorten long codes — <code>BA ≡ B.1.1.529</code>, so
+       <code>BA.1 = B.1.1.529.1</code>.</p>
   </div>
 </section>
 
