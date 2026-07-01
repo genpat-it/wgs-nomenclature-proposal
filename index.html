@@ -96,6 +96,7 @@
   <button data-tab="inv">3 · Invariance</button>
   <button data-tab="const">4 · Constellation / Reassortment</button>
   <button data-tab="pasteur">5 · Central registry vs Invariant</button>
+  <button data-tab="fed">6 · Federation &amp; versioning</button>
 </div>
 <main>
 
@@ -318,6 +319,98 @@
        which is what lets recompute/authority merge the two groups.</p>
     <div id="pv-dist" style="overflow:auto;margin-bottom:8px"></div>
     <div class="note" id="pv-explain"></div>
+  </div>
+</section>
+
+<!-- ===================== TAB 6: FEDERATION & VERSIONING ===================== -->
+<section class="tab" id="tab-fed">
+  <div class="card">
+    <h2>Federation &amp; versioning — do we ever need a server?</h2>
+    <p class="sub">Short answer: <b>no per-name server</b>. A shared <b>standard</b> is unavoidable (even a hash needs one),
+       but it is a <b>published, versioned file</b>, not an authority you query for every name.</p>
+    <div class="row">
+      <div class="col">
+        <h3 style="color:var(--green)">Known types → fully local</h3>
+        <ul style="font-size:14px;margin-top:4px">
+          <li>the frozen backbone is a <b>downloaded file</b> (even a static URL);</li>
+          <li>classify against it → same code for everyone, <b>offline</b>, no query;</li>
+          <li>~99% of the daily work → <b>zero coordination</b>.</li>
+        </ul>
+      </div>
+      <div class="col">
+        <h3 style="color:var(--orange)">Novelty → occasional coordination</h3>
+        <ul style="font-size:14px;margin-top:4px">
+          <li>a genuinely new lineage gets a <b>provisional</b> label per lab;</li>
+          <li>reconciled at a <b>periodic, versioned release</b> of the backbone;</li>
+          <li>the release is a <b>reproducible build</b> on shared public data (NCBI/GISAID),
+              <b>not</b> a per-name authority (the <b>Pango</b> model).</li>
+        </ul>
+      </div>
+    </div>
+
+    <svg width="100%" height="260" viewBox="0 0 720 260" style="margin:6px 0">
+      <defs><marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+        <path d="M0,0 L6,3 L0,6 Z" fill="#5a6b7d"/></marker>
+        <marker id="ahg" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+        <path d="M0,0 L6,3 L0,6 Z" fill="#288c5a"/></marker></defs>
+      <!-- backbone file -->
+      <rect x="255" y="8" width="210" height="34" rx="6" fill="#eef3f8" stroke="#1e5a96" stroke-width="1.5"/>
+      <text x="360" y="29" font-size="13" text-anchor="middle" fill="#1e5a96" font-weight="600">Backbone vN (public file)</text>
+      <!-- download arrows to labs -->
+      <g stroke="#5a6b7d" stroke-width="1.4" marker-end="url(#ah)" fill="none">
+        <path d="M300,42 L120,86"/><path d="M330,42 L245,86"/><path d="M360,42 L370,86"/><path d="M390,42 L495,86"/><path d="M420,42 L620,86"/>
+      </g>
+      <text x="150" y="60" font-size="10" fill="#5a6b7d">download</text>
+      <!-- labs -->
+      <g font-size="12" text-anchor="middle">
+        <g fill="#e3f4ea" stroke="#288c5a">
+          <rect x="80"  y="88" width="80" height="30" rx="6"/><rect x="205" y="88" width="80" height="30" rx="6"/>
+          <rect x="330" y="88" width="80" height="30" rx="6"/><rect x="455" y="88" width="80" height="30" rx="6"/>
+          <rect x="580" y="88" width="80" height="30" rx="6"/>
+        </g>
+        <g fill="#1c2530"><text x="120" y="107">Lab 1</text><text x="245" y="107">Lab 2</text><text x="370" y="107">Lab 3</text><text x="495" y="107">Lab 4</text><text x="620" y="107">Lab 5</text></g>
+      </g>
+      <text x="360" y="135" font-size="11" text-anchor="middle" fill="#288c5a">compute the code locally · offline · no server</text>
+      <!-- novelty arrows down to public data -->
+      <g stroke="#e19628" stroke-width="1.4" marker-end="url(#ah)" fill="none" stroke-dasharray="4 3">
+        <path d="M120,118 L330,162"/><path d="M245,118 L345,162"/><path d="M370,118 L375,162"/><path d="M495,118 L400,162"/><path d="M620,118 L415,162"/>
+      </g>
+      <text x="470" y="150" font-size="10" fill="#e19628">novelty (provisional)</text>
+      <!-- public data -->
+      <rect x="250" y="164" width="220" height="32" rx="6" fill="#fdf0db" stroke="#e19628" stroke-width="1.5"/>
+      <text x="360" y="184" font-size="12" text-anchor="middle" fill="#a76b10">Public data (NCBI / GISAID)</text>
+      <!-- reproducible release loop back to backbone -->
+      <path d="M470,180 C660,180 690,120 690,80 C690,40 560,25 465,25" fill="none" stroke="#288c5a" stroke-width="1.6" marker-end="url(#ahg)"/>
+      <text x="612" y="150" font-size="10" fill="#288c5a">reproducible</text>
+      <text x="612" y="163" font-size="10" fill="#288c5a">release → vN+1</text>
+    </svg>
+
+    <h3>Central (per-name) vs ours (per-release)</h3>
+    <table class="dist" style="font-size:13px">
+      <tr><th></th><th style="color:var(--red)">per-name (central)</th><th style="color:var(--green)">per-release (ours)</th></tr>
+      <tr><th>coordination</th><td>every name, real time</td><td>occasional, novelty only</td></tr>
+      <tr><th>form</th><td>queryable server</td><td>static file + reproducible build</td></tr>
+      <tr><th>covers</th><td>everything</td><td>only the new tips</td></tr>
+      <tr><th>offline</th><td>no</td><td><b>yes</b> for known types</td></tr>
+      <tr><th>trust</th><td>you must ask</td><td><b>you re-run &amp; verify</b></td></tr>
+    </table>
+    <div class="note">
+      <b>Honest bottom line:</b> a <b>shared standard</b> is unavoidable — even a hash needs one, and so does the
+      central registry. What we drop is the <b>per-name authority</b>: known types are computed locally; novelty is
+      reconciled by an <b>occasional, reproducible, versioned release</b> — a file, not a gatekeeper.
+    </div>
+
+    <h3>When does the backbone get re-structured?</h3>
+    <p class="sub">Never automatically (we classify against it, we don't re-cluster). Only at a deliberate versioned release, when evidence warrants:</p>
+    <ul style="font-size:14px">
+      <li><b>a bridge closes a gap</b> → two lineages merge (the gap was an under-sampling artefact — e.g. BTV frozen on EU data, then AF/AS fills it in);</li>
+      <li><b>hidden fine structure</b> → split a node / add a finer level (a new digit);</li>
+      <li><b>standard revision</b> → thresholds recalibrated, scheme/reference updated;</li>
+      <li>segmented case: recombination is <b>absorbed per-segment</b>, so it rarely forces this.</li>
+    </ul>
+    <p class="sub">Likelihood: <b>high early</b> (sparse backbone → gaps), then <b>rare</b> as sampling matures — exactly
+       Pango's history. Mitigate: first backbone on a <b>broad, representative</b> set; robust linkage/thresholds;
+       when re-structuring is needed, <b>version with old→new aliases</b> to keep invariance.</p>
   </div>
 </section>
 
