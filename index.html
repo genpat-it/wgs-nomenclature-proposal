@@ -1438,14 +1438,19 @@ document.getElementById('pv-add').onclick=()=>{
 /* ============================================================
    TABS
    ============================================================ */
+function showTab(name){
+  const btn=document.querySelector(`#tabs button[data-tab="${name}"]`), sec=document.getElementById('tab-'+name);
+  if(!btn||!sec) return false;
+  document.querySelectorAll('#tabs button').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  btn.classList.add('active'); sec.classList.add('active'); return true;
+}
 document.querySelectorAll('#tabs button').forEach(b=>{
-  b.onclick=()=>{
-    document.querySelectorAll('#tabs button').forEach(x=>x.classList.remove('active'));
-    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-    b.classList.add('active');
-    document.getElementById('tab-'+b.dataset.tab).classList.add('active');
-  };
+  b.onclick=()=>{ const n=b.dataset.tab; showTab(n); history.replaceState(null,'','#'+n); };
 });
+// deep links: open a specific tab via #hash (shareable), and react to hash changes
+window.addEventListener('hashchange',()=>{ showTab(location.hash.replace(/^#/,'')); });
+(function(){ const n=location.hash.replace(/^#/,''); if(n) showTab(n); })();
 
 // flip the banner green: if you can read THIS state, JS is running
 (function(){
